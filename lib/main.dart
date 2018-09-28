@@ -1,7 +1,6 @@
-import 'dart:_http';
-
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' show parse;
+import 'package:html/dom.dart' as HtmlDom;
 import 'package:dio/dio.dart';
 
 void main() => runApp(new MyApp());
@@ -55,16 +54,64 @@ class _MyHomePageState extends State<MyHomePage> {
 //    var request = await httpClient.getUrl()
 
     Dio dio = new Dio();
-    Response response = await dio.get("http://www.kenwen.com/cview/241/241355/");
-    print(response.data);
+    Response response =
+        await dio.get("http://www.kenwen.com/cview/241/241355/");
+//    print(response.data);
 
     var document =
         parse('<body>Hello world! <a href="www.html5rocks.com">HTML5 rocks!');
 
-    print(document.outerHtml);
-    print(document.querySelector('a').outerHtml);
-    print(document.querySelector('a').text);
-    print(document.querySelector('a').attributes["href"]);
+    document = parse(response.data);
+
+//    https://github.com/dart-lang/html/
+//    https://github.com/html5lib/html5lib-python
+//    https://html5lib.readthedocs.io/en/latest/
+//    var html = parse(response.body, encoding: "gb2312");
+//    var tipsRoot = html.querySelector("div.pingshu_ysts8_i");
+//    var items = tipsRoot.querySelectorAll("li.qx");
+//    items.forEach((f) {
+//      print(f.text);
+//    });
+//    print(document.outerHtml);
+//    print(document.querySelector('a').outerHtml);
+//    print(document.querySelector('a').text);
+//    print(document.querySelector('a').attributes["href"]);
+    var chapterRowList = document.querySelector('div#list dl').children;
+    var currentRowIndex = 0;
+    var groupIndex = 0;
+//    List<HtmlDom.Element> chapterList = new List();
+    List chapterList = new List();
+    chapterRowList.forEach((el) {
+      var isGroupTitle = el.children.length == 0;
+      if (isGroupTitle) {
+        groupIndex++;
+      }
+      if (groupIndex > 1 && !isGroupTitle) {
+//        chapterList.add(el);
+        chapterList.add({
+          "title": el.children[0].text,
+          "url": el.children[0].attributes['href'],
+        });
+      }
+      currentRowIndex++;
+    });
+    print(chapterList);
+//    print(1);
+//    print(chapterRow.length);
+//    var list2 = [1,2,3];
+//    var l3 = list2.where((it)=>false);
+//    print(l3);
+//    list2.forEach((it){
+//      print(it);
+//    });
+//    var list = chapterRow.where((el) {
+//      print(2);
+//      print(el.children);
+//      currentRowIndex++;
+//      return true;
+//    });
+//    print(chapterRow);
+
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below

@@ -21,6 +21,8 @@ dependencies:
   cupertino_icons: ^0.1.2
   html: any
   dio: 1.0.6
+  sqflite: any
+  battery: 0.2.3
 
 dev_dependencies:
   flutter_test:
@@ -68,3 +70,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.io/custom-fonts/#from-packages
+  fonts:
+    - family: ReadFont
+      fonts:
+        - asset: assets/fonts/ReadFont.ttf
+#        - asset: assets/fonts/xxx.ttf

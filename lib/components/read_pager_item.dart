@@ -8,14 +8,14 @@ class ReadPagerItem extends StatelessWidget {
   var pageHeight = ScreenAdaptation.screenHeight;
 
   final text;
-  final title = "标题";
+  final title;
 
-  ReadPagerItem({this.text});
+  ReadPagerItem({this.text, this.title});
 
   @override
   Widget build(BuildContext context) {
     var smallTextColor = Color(0xff807C7A);
-    var smallTextStyle = TextStyle(color: smallTextColor, fontSize: dp(14.5));
+    var smallTextStyle = TextStyle(color: smallTextColor, fontSize: dp(14));
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: dp(16)),
@@ -23,15 +23,15 @@ class ReadPagerItem extends StatelessWidget {
       child: Column(
         children: <Widget>[
           Container(
-            height: dp(37),
+            height: dp(35),
             alignment: Alignment.topLeft,
 //            color: Colors.green,
-            padding: EdgeInsets.only(top: dp(11)),
+            padding: EdgeInsets.only(top: dp(12)),
             child: Text(
               title,
               style: TextStyle(
                 color: smallTextColor,
-                fontSize: dp(14.2),
+                fontSize: dp(15),
               ),
             ),
           ),
@@ -53,7 +53,7 @@ class ReadPagerItem extends StatelessWidget {
                   style: smallTextStyle,
                 )),
                 Text(
-                  '8/9',
+                  '5/12',
                   style: smallTextStyle,
                 ),
               ],

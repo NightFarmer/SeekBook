@@ -21,28 +21,21 @@ class _ReadPagerState extends State<ReadPager> {
 
   var chapterTextCacheList = List(); //已缓存到内存的章节，缓存3个，当前的/上一章/下一章，若没有则从网络和本地读取，
 
-  var pageWidth = vw(100);
-  var pageHeight = ScreenAdaptation.screenHeight;
+  get ReadTextWidth => ScreenAdaptation.screenWidth - dp(32);
 
-  get ReadTextWidth {
-    return pageWidth - dp(32);
-  }
-
-  get ReadTextHeight {
-    return pageHeight - dp(37) - dp(44); //减去头部章节名称高度，减去底部页码高度
-  }
+  get ReadTextHeight =>
+      ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
 
   var pageEndIndexList = [];
 
   var content = "";
 
-  var textStyle = new TextStyle(
-      height: 1.1,
-      fontSize: dp(20),
-      letterSpacing: dp(1),
-      color: Color(0xff383635)
-//    fontFamily: 'ReadFont',
-//    textBaseline: TextBaseline.ideographic,
+  get textStyle => new TextStyle(
+        height: 1.2,
+        fontSize: dp(20),
+        letterSpacing: dp(1),
+        color: Color(0xff383635),
+//        fontFamily: 'ReadFont',
       );
 
   @override
@@ -52,36 +45,32 @@ class _ReadPagerState extends State<ReadPager> {
   }
 
   Future chapterParse() async {
+    setState(() {
+      this.content = 'loading';
+    });
+
     Dio dio = new Dio();
     var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
     Response response = await dio.get(url);
     var document = parse(response.data);
     var content = document.querySelector('#content').innerHtml;
-//    print(content);
     content = content
         .split("<br>")
         .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
         .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
         .join('\n');
+
 //    print(content);
-//    setState(() {
-//      text = content;
-//    });
-//    content = "123456";
+//    print(ReadTextWidth);
+//    print(ReadTextHeight);
 
-    print(content);
-    print(ReadTextWidth);
-    print(ReadTextHeight);
+    var pageEndIndexList = parseChapterPager(content);
+    print(pageEndIndexList);
+    print("页数 ${pageEndIndexList.length}");
+    this.pageEndIndexList = pageEndIndexList;
 
-    Future.delayed(Duration(milliseconds: 5000), () {
-      var pageEndIndexList = parseChapterPager(content);
-      print(pageEndIndexList);
-      print("页数 ${pageEndIndexList.length}");
-      this.pageEndIndexList = pageEndIndexList;
-
-      setState(() {
-        this.content = content;
-      });
+    setState(() {
+      this.content = content;
     });
   }
 
@@ -103,10 +92,11 @@ class _ReadPagerState extends State<ReadPager> {
         text,
         style: textStyle,
       ),
+      title: "章节标题",
     );
   }
 
-  // parse hole
+  // 解析一个章节所有分页每页最后字符的index列表
   List<int> parseChapterPager(String content) {
     List<int> pageEndPointList = List();
     do {
@@ -127,9 +117,7 @@ class _ReadPagerState extends State<ReadPager> {
     return pageEndPointList;
   }
 
-  /// 接收内容
-  /// 追加内容返回false
-  /// 计算完毕返回true
+  /// 传入需要计算分页的文本，返回第一页最后一个字符的index
   int getOnePageEnd(String text) {
     if (layout(text)) {
 //      return false;
@@ -167,7 +155,6 @@ class _ReadPagerState extends State<ReadPager> {
     var textPainter = TextPainter(textDirection: TextDirection.ltr);
     textPainter
       ..text = getTextSpan(text)
-//      ..layout(maxWidth: pageSize.width);
       ..layout(maxWidth: ReadTextWidth);
     return !didExceed(textPainter);
   }
@@ -177,12 +164,6 @@ class _ReadPagerState extends State<ReadPager> {
     return textPainter.didExceedMaxLines ||
         textPainter.size.height > ReadTextHeight;
   }
-
-//  bool get didExceed {
-//    return textPainter.didExceedMaxLines ||
-////        textPainter.size.height > pageSize.height;
-//        textPainter.size.height > ReadTextheight;
-//  }
 
   /// 获取带样式的文本对象
   TextSpan getTextSpan(String text) {

@@ -28,6 +28,7 @@ class BatteryIcon extends StatelessWidget {
                 Battery.value.toString(),
                 style: TextStyle(
                   color: color,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),

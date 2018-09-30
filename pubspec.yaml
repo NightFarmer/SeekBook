@@ -73,5 +73,6 @@ flutter:
   fonts:
     - family: ReadFont
       fonts:
-        - asset: assets/fonts/ReadFont.ttf
+        - asset: assets/fonts/ReadFont2.ttf
+#        - asset: assets/fonts/ReadFont.ttf
 #        - asset: assets/fonts/xxx.ttf

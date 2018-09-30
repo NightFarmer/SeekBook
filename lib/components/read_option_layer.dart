@@ -18,8 +18,14 @@ class _ReadOptionLayerState extends State<ReadOptionLayer> {
 //    } else {
 //      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 //    }
-    SystemChrome.setEnabledSystemUIOverlays([]);
+//    SystemChrome.setEnabledSystemUIOverlays([]);
     print("?????");
+
+    var index = SystemUiOverlay.values.indexOf(SystemUiOverlay.top);
+    List<SystemUiOverlay> newLays = []..addAll(SystemUiOverlay.values);
+    newLays.removeAt(index);
+    SystemChrome.setEnabledSystemUIOverlays(newLays);
+
     super.initState();
   }
 

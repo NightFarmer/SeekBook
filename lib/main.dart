@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:seek_book/utils/battery.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: "ReadFont"
       ),
 //      home: new ReadPage(),
       home: new WindowSizeQuery(),

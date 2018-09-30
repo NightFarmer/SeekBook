@@ -9,9 +9,13 @@ class Battery {
   }
 
   static waitToGetBatteryValue() async {
-    Battery.value = await battery.batteryLevel;
-    print("battery ${Battery.value}");
-    await Future.delayed(Duration(milliseconds: 1000));
-    Battery.waitToGetBatteryValue();
+    try {
+      Battery.value = await battery.batteryLevel;
+      print("battery ${Battery.value}");
+      await Future.delayed(Duration(milliseconds: 5000));
+      Battery.waitToGetBatteryValue();
+    } catch (e) {
+      print(e);
+    }
   }
 }

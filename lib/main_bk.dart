@@ -9,7 +9,7 @@ import 'package:path/path.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:sqflite/sqflite.dart';
 
-void main() => runApp(new MyApp());
+void main2222() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

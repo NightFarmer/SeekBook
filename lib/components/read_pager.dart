@@ -29,7 +29,7 @@ class _ReadPagerState extends State<ReadPager> {
   }
 
   get ReadTextHeight {
-    return pageHeight - dp(37) - dp(44);//减去头部章节名称高度，减去底部页码高度
+    return pageHeight - dp(37) - dp(44); //减去头部章节名称高度，减去底部页码高度
   }
 
   var pageEndIndexList = [];
@@ -37,13 +37,13 @@ class _ReadPagerState extends State<ReadPager> {
   var content = "";
 
   var textStyle = new TextStyle(
-    height: 1.1,
-    fontSize: dp(20),
-    letterSpacing: dp(1),
-    color: Color(0xff383635)
+      height: 1.1,
+      fontSize: dp(20),
+      letterSpacing: dp(1),
+      color: Color(0xff383635)
 //    fontFamily: 'ReadFont',
 //    textBaseline: TextBaseline.ideographic,
-  );
+      );
 
   @override
   void initState() {
@@ -69,16 +69,19 @@ class _ReadPagerState extends State<ReadPager> {
 //    });
 //    content = "123456";
 
-      print(content);
-      print(ReadTextWidth);
-      print(ReadTextHeight);
-    var pageEndIndexList = parseChapterPager(content);
-    print(pageEndIndexList);
-    print("页数 ${pageEndIndexList.length}");
-    this.pageEndIndexList = pageEndIndexList;
+    print(content);
+    print(ReadTextWidth);
+    print(ReadTextHeight);
 
-    setState(() {
-      this.content = content;
+    Future.delayed(Duration(milliseconds: 5000), () {
+      var pageEndIndexList = parseChapterPager(content);
+      print(pageEndIndexList);
+      print("页数 ${pageEndIndexList.length}");
+      this.pageEndIndexList = pageEndIndexList;
+
+      setState(() {
+        this.content = content;
+      });
     });
   }
 

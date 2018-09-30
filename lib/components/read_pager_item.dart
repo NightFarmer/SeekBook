@@ -44,7 +44,9 @@ class ReadPagerItem extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                BatteryIcon(),
+                BatteryIcon(
+                  color: smallTextColor,
+                ),
                 Expanded(
                     child: Text(
                   '10:15',

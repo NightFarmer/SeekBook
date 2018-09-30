@@ -1,14 +1,16 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
+
 enum ScreenAdaptationType {
   byWidth,
   byHeight,
 }
 
 class ScreenAdaptation {
-  static final double screenWidth =
+  static double screenWidth =
       window.physicalSize.width / window.devicePixelRatio;
-  static final double screenHeight =
+  static double screenHeight =
       window.physicalSize.height / window.devicePixelRatio;
 
   ///适配设计尺寸
@@ -18,6 +20,14 @@ class ScreenAdaptation {
 
   static ScreenAdaptationType screenAdaptationType =
       ScreenAdaptationType.byWidth;
+
+  static init(BuildContext context) {
+    final mediaQueryData = MediaQuery.of(context);
+    ScreenAdaptation.screenHeight = mediaQueryData.size.height;
+    ScreenAdaptation.screenWidth = mediaQueryData.size.width;
+//    double size =
+//        mediaQueryData.size.longestSide * mediaQueryData.devicePixelRatio;
+  }
 }
 
 dp(value) {

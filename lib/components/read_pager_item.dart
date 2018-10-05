@@ -1,16 +1,49 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:seek_book/components/battery_icon.dart';
+import 'package:seek_book/utils/battery.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 
+class ReadPagerItem extends StatefulWidget {
+  final text;
+  final title;
+  final pageLabel;
+
+  ReadPagerItem({Key key, this.text, this.title, this.pageLabel})
+      : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ReadPagerItemState();
+  }
+}
+
 /// 翻页阅读的每页组件
-class ReadPagerItem extends StatelessWidget {
+class _ReadPagerItemState extends State<ReadPagerItem> {
   var pageWidth = vw(100);
   var pageHeight = ScreenAdaptation.screenHeight;
 
-  final text;
-  final title;
+  var batteryValue = 0;
+  var time = "";
 
-  ReadPagerItem({this.text, this.title});
+  @override
+  void initState() {
+    this.waitToGetNewStateValue();
+    super.initState();
+  }
+
+  waitToGetNewStateValue() async {
+    try {
+      batteryValue = Battery.value;
+      var dateTime = new DateTime.now();
+      time = '${dateTime.hour}:${dateTime.minute}';
+      await Future.delayed(Duration(milliseconds: 1000));
+      this.waitToGetNewStateValue();
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +54,7 @@ class ReadPagerItem extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: dp(16)),
       decoration: BoxDecoration(color: Color(0xffEAE5E0)),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Container(
             height: dp(35),
@@ -28,7 +62,7 @@ class ReadPagerItem extends StatelessWidget {
 //            color: Colors.green,
             padding: EdgeInsets.only(top: dp(12)),
             child: Text(
-              title,
+              widget.title,
               style: TextStyle(
                 color: smallTextColor,
                 fontSize: dp(15),
@@ -36,7 +70,7 @@ class ReadPagerItem extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: text,
+            child: widget.text,
           ),
           Container(
             height: dp(44),
@@ -48,12 +82,13 @@ class ReadPagerItem extends StatelessWidget {
                   color: smallTextColor,
                 ),
                 Expanded(
-                    child: Text(
-                  '10:15',
-                  style: smallTextStyle,
-                )),
+                  child: Text(
+                    '$time',
+                    style: smallTextStyle,
+                  ),
+                ),
                 Text(
-                  '5/12',
+                  '${widget.pageLabel}',
                   style: smallTextStyle,
                 ),
               ],

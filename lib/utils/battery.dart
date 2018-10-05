@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:battery/battery.dart' as batteryLib;
 
 class Battery {

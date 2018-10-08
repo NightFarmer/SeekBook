@@ -16,11 +16,16 @@ class ReadPager extends StatefulWidget {
   }
 }
 
+int maxInt = 999999;
+
 class _ReadPagerState extends State<ReadPager> {
+//  int maxInt = 999999999999999;
+
   var currentPageIndex = 0;
   var currentChapterIndex = 0;
 
-  var chapterTextCacheList = List(); //已缓存到内存的章节，缓存3个，当前的/上一章/下一章，若没有则从网络和本地读取，
+//  var chapterTextCacheList = List(); //已缓存到内存的章节，缓存3个，当前的/上一章/下一章，若没有则从网络和本地读取，
+  var chapterTextCacheMap = Map<int, String>(); //已缓存到内存的章节，若没有则从网络和本地读取，
 
   get ReadTextWidth => ScreenAdaptation.screenWidth - dp(32);
 
@@ -28,8 +33,9 @@ class _ReadPagerState extends State<ReadPager> {
       ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
 
   var pageEndIndexList = [];
-  var pageEndIndexListNext = [];
-  var pageEndIndexListPre = [];
+
+//  var pageEndIndexListNext = [];
+//  var pageEndIndexListPre = [];
 
   var content = "";
 
@@ -43,34 +49,37 @@ class _ReadPagerState extends State<ReadPager> {
 
   PageController pageController;
 
+  int initScrollIndex = (maxInt / 2).floor();
+  int initPageIndex = 0;
+  int initChapterIndex = 0;
+
   @override
   void initState() {
     this.chapterParse();
-    this.pageController = PageController(initialPage: 1);
+    this.pageController = PageController(initialPage: initScrollIndex);
     this.pageController.addListener(() {
-      print(this.pageController.offset);
-      if (this.pageController.offset == 750) {
-        this.pageController.jumpTo(375.0);
-        this.setState(() {
-          this.currentPageIndex++;
-          if (this.currentPageIndex >= this.pageEndIndexList.length) {
-            // todo 跳转新一章
-            // todo 缓存加载
-            this.currentPageIndex = 0;
-          }
-        });
-      } else if (this.pageController.offset == 0) {
-        this.pageController.jumpTo(375.0);
-        this.setState(() {
-          this.currentPageIndex--;
-          if (this.currentPageIndex < 0) {
-            // todo 跳转新一章
-            // todo 缓存加载
-            this.currentPageIndex = 0;
-          }
-        });
-      }
-//      this.pageController.
+//      print(this.pageController.offset);
+//      if (this.pageController.offset == ScreenAdaptation.screenWidth * 2) {
+//        this.pageController.jumpTo(ScreenAdaptation.screenWidth);
+//        this.setState(() {
+//          this.currentPageIndex++;
+//          if (this.currentPageIndex >= this.pageEndIndexList.length) {
+//            // todo 跳转新一章
+//            // todo 缓存加载
+//            this.currentPageIndex = 0;
+//          }
+//        });
+//      } else if (this.pageController.offset == 0) {
+//        this.pageController.jumpTo(ScreenAdaptation.screenWidth);
+//        this.setState(() {
+//          this.currentPageIndex--;
+//          if (this.currentPageIndex < 0) {
+//            // todo 跳转新一章
+//            // todo 缓存加载
+//            this.currentPageIndex = 0;
+//          }
+//        });
+//      }
     });
     super.initState();
   }
@@ -95,8 +104,8 @@ class _ReadPagerState extends State<ReadPager> {
     print(pageEndIndexList);
     print("页数 ${pageEndIndexList.length}");
     this.pageEndIndexList = pageEndIndexList;
-    this.pageEndIndexListNext = pageEndIndexList;
-    this.pageEndIndexListPre = pageEndIndexList;
+//    this.pageEndIndexListNext = pageEndIndexList;
+//    this.pageEndIndexListPre = pageEndIndexList;
 
     setState(() {
       this.content = content;
@@ -120,17 +129,20 @@ class _ReadPagerState extends State<ReadPager> {
       },
       controller: pageController,
       itemBuilder: (BuildContext context, int index) {
-        return index == 1
-            ? this.buildCurrent()
-            : index == 2 ? this.buildNext() : this.buildPre();
+//        return index == 1
+//            ? this.buildCurrent()
+//            : index == 2 ? this.buildNext() : this.buildPre();
+        return buildPage(index);
       },
-      itemCount: 3,
+//      itemCount: 3,
+      itemCount: maxInt,
       physics: ClampingScrollPhysics(),
+//      physics: PagerScrollPhysics(),
     );
   }
 
-  String loadPageText(int pageIndex) {
-    return content.substring(
+  String loadPageText(chapterText, int pageIndex) {
+    return chapterText.substring(
       pageIndex == 0 ? 0 : this.pageEndIndexList[pageIndex - 1],
       this.pageEndIndexList[pageIndex],
     );
@@ -219,70 +231,38 @@ class _ReadPagerState extends State<ReadPager> {
     return new TextSpan(text: text, style: textStyle);
   }
 
-  buildPre() {
-    var text = "";
-    var pageLabel = "";
-    if (pageEndIndexList.length >= 2 && (currentPageIndex - 1) >= 0) {
-      text = loadPageText(currentPageIndex - 1);
-      pageLabel = '${currentPageIndex}/${pageEndIndexList.length}';
-    } else if (pageEndIndexListPre.length >= 1) {
-      text = content.substring(
-        pageEndIndexListPre.length - 1 == 0
-            ? 0
-            : this.pageEndIndexListPre[pageEndIndexListPre.length - 1 - 1],
-        this.pageEndIndexListPre[pageEndIndexListPre.length - 1],
-      );
-      pageLabel = '${pageEndIndexListPre.length}/${pageEndIndexListPre.length}';
-    } else {
-      text = "加载中";
-    }
-    return ReadPagerItem(
-      text: new Text(
-        text,
-        style: textStyle,
-      ),
-      title: "章节标题",
-      pageLabel: pageLabel,
-    );
-  }
+  Widget buildPage(int index) {
+    var pageIndex = initPageIndex + (index - initScrollIndex);
+    print("yyyyy");
+    print(pageIndex);
 
-  buildNext() {
-    var text = "";
-    var pageLabel = "";
-    if (pageEndIndexList.length >= 1 &&
-        (currentPageIndex + 1) < pageEndIndexList.length) {
-      text = loadPageText(currentPageIndex + 1);
-      pageLabel = '${currentPageIndex + 2}/${pageEndIndexList.length}';
-    } else if (pageEndIndexListNext.length >= 1) {
-      text = content.substring(
-        0,
-        this.pageEndIndexListNext[0],
-      );
-      pageLabel = '1/${pageEndIndexListNext.length}';
-    } else {
-      text = "加载中";
+//    var chapterText = chapterTextCacheMap[pageIndex];
+    var chapterText = content;
+    var pageCount = parseChapterPager(chapterText).length;
+    while (pageIndex > pageCount - 1) {
+      chapterText = content;
+      pageCount = parseChapterPager(chapterText).length;
+      pageIndex -= pageCount;
     }
-    return ReadPagerItem(
-      text: new Text(
-        text,
-        style: textStyle,
-      ),
-      title: "章节标题",
-      pageLabel: pageLabel,
-    );
-  }
+    while (pageIndex < 0) {
+      chapterText = content;
+      pageCount = parseChapterPager(chapterText).length;
+      pageIndex += pageCount;
+    }
+    print("xxxxxxxxxxx");
+    print(pageIndex);
+    print(pageCount);
 
-  buildCurrent() {
     var text = "";
     var pageLabel = "";
     var chapterTitle = "";
     if (this.pageEndIndexList.length >= 1) {
-      text = loadPageText(currentPageIndex);
-      pageLabel = '${currentPageIndex + 1}/${pageEndIndexList.length}';
+      text = loadPageText(chapterText, pageIndex);
+      pageLabel = '${pageIndex + 1}/${pageEndIndexList.length}';
     } else {
       text = "加载中";
     }
-//    chapterTitle = chapter
+
     return ReadPagerItem(
       text: new Text(
         text,

@@ -33,6 +33,7 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
+          SafeArea(child: Text('123123123')),
           Container(
             child: GestureDetector(
               onTap: () async {

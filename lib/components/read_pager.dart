@@ -10,6 +10,10 @@ import 'package:seek_book/components/read_pager_item.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 
 class ReadPager extends StatefulWidget {
+  Map bookInfo;
+
+  ReadPager({Key key, @required this.bookInfo}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _ReadPagerState();
@@ -54,8 +58,6 @@ class _ReadPagerState extends State<ReadPager> {
     this.chapterParse();
     this.pageController = PageController(initialPage: initScrollIndex);
     this.pageController.addListener(() {
-      print("AAA");
-
       var currentPageIndex =
           pageController.page - initScrollIndex + initPageIndex;
       if (currentPageIndex < currentPageIndex.round() &&
@@ -63,28 +65,6 @@ class _ReadPagerState extends State<ReadPager> {
         print("禁止滑动");
         pageController.jumpToPage(pageController.page.round());
       }
-//      print(this.pageController.offset);
-//      if (this.pageController.offset == ScreenAdaptation.screenWidth * 2) {
-//        this.pageController.jumpTo(ScreenAdaptation.screenWidth);
-//        this.setState(() {
-//          this.currentPageIndex++;
-//          if (this.currentPageIndex >= this.pageEndIndexList.length) {
-//            // todo 跳转新一章
-//            // todo 缓存加载
-//            this.currentPageIndex = 0;
-//          }
-//        });
-//      } else if (this.pageController.offset == 0) {
-//        this.pageController.jumpTo(ScreenAdaptation.screenWidth);
-//        this.setState(() {
-//          this.currentPageIndex--;
-//          if (this.currentPageIndex < 0) {
-//            // todo 跳转新一章
-//            // todo 缓存加载
-//            this.currentPageIndex = 0;
-//          }
-//        });
-//      }
     });
     super.initState();
   }
@@ -95,7 +75,8 @@ class _ReadPagerState extends State<ReadPager> {
 //    });
 
     Dio dio = new Dio();
-    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
+//    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
+    var url = widget.bookInfo['chapterList'][0]['url'];
     Response response = await dio.get(url);
     var document = parse(response.data);
     var content = document.querySelector('#content').innerHtml;
@@ -290,7 +271,7 @@ class _ReadPagerState extends State<ReadPager> {
         text,
         style: textStyle,
       ),
-      title: "章节标题",
+      title: widget.bookInfo['chapterList'][initChapterIndex]['title'],
       pageLabel: pageLabel,
     );
   }

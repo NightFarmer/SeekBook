@@ -6,6 +6,10 @@ import 'package:seek_book/components/read_pager.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 
 class ReadPage extends StatefulWidget {
+  Map bookInfo;
+
+  ReadPage({Key key, @required this.bookInfo}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _ReadPageState();
@@ -13,15 +17,13 @@ class ReadPage extends StatefulWidget {
 }
 
 class _ReadPageState extends State<ReadPage> {
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: <Widget>[
           Positioned(
-            child: ReadPager(),
+            child: ReadPager(bookInfo:widget.bookInfo),
             left: 0.0,
             top: 0.0,
             right: 0.0,

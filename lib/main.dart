@@ -1,12 +1,6 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path/path.dart';
-import 'package:seek_book/pages/book_detail_page.dart';
-import 'package:seek_book/pages/book_search_page.dart';
 import 'package:seek_book/pages/main_page.dart';
-import 'package:seek_book/pages/splash_page.dart';
 import 'package:seek_book/utils/battery.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:sqflite/sqflite.dart';
@@ -52,6 +46,8 @@ class MyAppState extends State<MyApp> {
         await db.execute(
           "CREATE TABLE Book (id INTEGER PRIMARY KEY, name TEXT, author TEXT, chapters Text, url Text, site Text, updateTime long, imgUrl Text, currentPageIndex INTEGER,currentChapterIndex INTEGER)",
         );
+        await db
+            .execute('create table chapter (id String primary key, text text)');
       },
     );
 
@@ -80,11 +76,11 @@ class MyAppState extends State<MyApp> {
   }
 }
 
-class WindowSizeQuery extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    ScreenAdaptation.designSize = 414.0;
-    ScreenAdaptation.init(context);
-    return new ReadPage();
-  }
-}
+//class WindowSizeQuery extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    ScreenAdaptation.designSize = 414.0;
+//    ScreenAdaptation.init(context);
+//    return new ReadPage();
+//  }
+//}

@@ -73,6 +73,7 @@ class _MainPageState extends State<MainPage> {
             builder: (context) => ReadPage(bookInfo: item),
           ),
         );
+        loadData();
       },
       child: Row(
         children: <Widget>[
@@ -92,6 +93,7 @@ class _MainPageState extends State<MainPage> {
     List<Map> list = await database.rawQuery('SELECT * FROM Book');
     list = list.map((it) {
       return {
+        'id': it['id'],
         'name': it['name'],
         'author': it['author'],
         'url': it['url'],

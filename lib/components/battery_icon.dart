@@ -17,11 +17,11 @@ class BatteryIcon extends StatelessWidget {
           Container(
             color: color,
             width: dp(1.5),
-            height: 6.0,
+            height: dp(6.0),
           ),
           Container(
             width: dp(20),
-            height: dp(13),
+            height: dp(12),
             alignment: Alignment.center,
             child: FittedBox(
               child: Text(

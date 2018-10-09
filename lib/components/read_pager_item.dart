@@ -48,7 +48,7 @@ class _ReadPagerItemState extends State<ReadPagerItem> {
   @override
   Widget build(BuildContext context) {
     var smallTextColor = Color(0xff807C7A);
-    var smallTextStyle = TextStyle(color: smallTextColor, fontSize: dp(14));
+    var smallTextStyle = TextStyle(color: smallTextColor, fontSize: dp(13));
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: dp(16)),
@@ -66,7 +66,7 @@ class _ReadPagerItemState extends State<ReadPagerItem> {
               widget.title,
               style: TextStyle(
                 color: smallTextColor,
-                fontSize: dp(15),
+                fontSize: dp(14),
               ),
             ),
           ),

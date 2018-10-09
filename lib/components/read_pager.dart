@@ -55,7 +55,7 @@ class _ReadPagerState extends State<ReadPager> {
         ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
     textStyle = new TextStyle(
       height: 1.2,
-      fontSize: dp(20),
+      fontSize: dp(17),
       letterSpacing: dp(1),
       color: Color(0xff383635),
 //        fontFamily: 'ReadFont',

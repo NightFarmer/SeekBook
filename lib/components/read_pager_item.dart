@@ -58,6 +58,7 @@ class _ReadPagerItemState extends State<ReadPagerItem> {
         children: <Widget>[
           Container(
             height: dp(35),
+//            color: Colors.green,
             alignment: Alignment.topLeft,
 //            color: Colors.green,
             padding: EdgeInsets.only(top: dp(12)),

@@ -63,7 +63,11 @@ class MyAppState extends State<MyApp> {
 
     return new MaterialApp(
       title: 'Flutter Demo',
-      theme: new ThemeData(primarySwatch: Colors.blue, fontFamily: "ReadFont"),
+      theme: new ThemeData(
+        primarySwatch: Colors.blue,
+        platform: TargetPlatform.android,
+//        fontFamily: "ReadFont",
+      ),
       home: new MainPage(),
 //      home: new WindowSizeQuery(),
 //      routes: {

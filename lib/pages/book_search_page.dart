@@ -95,9 +95,9 @@ class _BookSearchPageState extends State<BookSearchPage> {
         .where((it) => it.querySelector('.s1').text != '作品分类')
         .map((row) {
       var bookLink = row.querySelector('.s2 a');
-      var name = bookLink.text;
-      var url = bookLink.attributes['href'];
-      var author = row.querySelector('.s4').text;
+      var name = bookLink.text.trim();
+      var url = bookLink.attributes['href'].trim();
+      var author = row.querySelector('.s4').text.trim();
       return {
         "name": name,
         "url": url,

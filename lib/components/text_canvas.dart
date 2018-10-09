@@ -46,6 +46,7 @@ class ChapterTextPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+//    print("paint=========== ${text.length}");
     //
 //    Paint paint = new Paint() //设置笔的属性
 //      ..color = Colors.blue[200]
@@ -95,8 +96,7 @@ class ChapterTextPainter extends CustomPainter {
       }
 
 //      print("$char\t${tp.size}");
-      var yOffset = yCharCount * lineHeight +
-          (lineHeight - tp.size.height) / 2;
+      var yOffset = yCharCount * lineHeight + (lineHeight - tp.size.height) / 2;
       tp.paint(canvas, new Offset(xOffset, yOffset));
 
       xCharCount++;

@@ -139,8 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
 //    });
 //    content = "123456";
     var pageEndIndexList = parseChapterPager(content);
-    print(pageEndIndexList);
-    print("页数 ${pageEndIndexList.length}");
+//    print(pageEndIndexList);
+//    print("页数 ${pageEndIndexList.length}");
     this.pageEndIndexList = pageEndIndexList;
 
     setState(() {

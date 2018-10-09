@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:seek_book/pages/book_search_page.dart';
 import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
+import 'package:seek_book/utils/status_bar.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:seek_book/globals.dart' as Globals;
 
@@ -74,13 +75,20 @@ class _MainPageState extends State<MainPage> {
             builder: (context) => ReadPage(bookInfo: item),
           ),
         );
+        StatusBar.show();
         loadData();
       },
-      child: Row(
-        children: <Widget>[
-          Text("${item['name']}"),
-          Text("${latestChapter}"),
-        ],
+      child: Container(
+        width: ScreenAdaptation.screenWidth,
+        color: Colors.green.withOpacity(0.1),
+        child: Row(
+          children: <Widget>[
+            Text("${item['name'].trim()}"),
+            Expanded(
+              child: Text("${latestChapter}"),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -91,7 +99,8 @@ class _MainPageState extends State<MainPage> {
     String path = join(databasesPath, "seek_book.db");
 
     var database = await openDatabase(path);
-    List<Map> list = await database.rawQuery('SELECT * FROM Book');
+    List<Map> list =
+        await database.rawQuery('SELECT * FROM Book where active=?', [1]);
     list = list.map((it) {
       return {
         'id': it['id'],

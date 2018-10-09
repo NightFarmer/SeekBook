@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:seek_book/components/read_option_layer.dart';
 import 'package:seek_book/components/read_pager_item.dart';
 import 'package:seek_book/components/text_canvas.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
@@ -13,8 +14,13 @@ import 'package:seek_book/globals.dart' as Globals;
 
 class ReadPager extends StatefulWidget {
   Map bookInfo;
+  final GlobalKey<ReadOptionLayerState> optionLayerKey;
 
-  ReadPager({Key key, @required this.bookInfo}) : super(key: key);
+  ReadPager({
+    Key key,
+    @required this.bookInfo,
+    this.optionLayerKey,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -57,7 +63,7 @@ class _ReadPagerState extends State<ReadPager> {
         ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
     LineHeight = dp(27);
     var lineNum = (ReadTextHeight / LineHeight).floor();
-    LineHeight = (ReadTextHeight/lineNum).floorToDouble();
+    LineHeight = (ReadTextHeight / lineNum).floorToDouble();
     textStyle = new TextStyle(
       height: 1.2,
       fontSize: dp(17),
@@ -68,6 +74,7 @@ class _ReadPagerState extends State<ReadPager> {
 
     this.pageController = PageController(initialPage: initScrollIndex);
     this.pageController.addListener(() {
+      widget.optionLayerKey.currentState.hide();
 //      var currentPageIndex =
 //          pageController.page - initScrollIndex + initPageIndex;
 //      print(currentPageIndex);
@@ -96,6 +103,7 @@ class _ReadPagerState extends State<ReadPager> {
   }
 
   Future loadChapterText(chapterIndex) async {
+    print('loadChapterText');
 //    setState(() {
 //      this.content = 'loading';
 //    });
@@ -104,10 +112,10 @@ class _ReadPagerState extends State<ReadPager> {
       return;
     }
     var url = chapterList[chapterIndex]['url'];
-    var exist = chapterTextMap[url];
-    if (exist != null) {
+    if (chapterTextMap[url] != null) {
       return;
     }
+    print("loadChapterText =======");
 
     var database = Globals.database;
     List<Map> existData =
@@ -127,9 +135,16 @@ class _ReadPagerState extends State<ReadPager> {
           .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
           .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
           .join('\n');
-      await database.insert('chapter', {
-        "id": url,
-        "text": content,
+      await database.transaction((txn) async {
+        List<Map> existData =
+            await txn.rawQuery('select text from chapter where id = ?', [url]);
+        if (existData.length > 0) {
+          return;
+        }
+        await txn.insert('chapter', {
+          "id": url,
+          "text": content,
+        });
       });
     }
     chapterTextMap[url] = content;
@@ -157,8 +172,8 @@ class _ReadPagerState extends State<ReadPager> {
       LineHeight,
     );
     chapterPagerDataMap[url] = pageEndIndexList;
-    print(pageEndIndexList);
-    print("页数 ${pageEndIndexList.length}");
+//    print(pageEndIndexList);
+//    print("页数 ${pageEndIndexList.length}");
     return pageEndIndexList;
   }
 
@@ -202,6 +217,7 @@ class _ReadPagerState extends State<ReadPager> {
     return NotificationListener(
       child: new PageView.builder(
         onPageChanged: (index) {
+          print('onPageChanged');
 //          currentPageIndex
 //        currentChapterIndex
           var pageChange = index - initScrollIndex;
@@ -264,14 +280,8 @@ class _ReadPagerState extends State<ReadPager> {
   }
 
   Widget buildPage(int index) {
-//    print("MM");
+    print("buildPage========");
     var pageIndex = currentPageIndex + (index - initScrollIndex);
-//    var pageIndex = initPageIndex + (index - initScrollIndex);
-//    print("yyyyy");
-//    print(pageIndex);
-//    print(initPageIndex);
-//    print(index);
-//    print(initScrollIndex);
     print('加载页 $pageIndex,  章节$currentChapterIndex');
 
 //    var chapterText = chapterTextCacheMap[pageIndex];
@@ -300,10 +310,6 @@ class _ReadPagerState extends State<ReadPager> {
       pageCount = calcPagerData(url).length;
       pageIndex += pageCount;
     }
-//    print("xxxxxxxxxxx");
-//    print(pageIndex);
-//    print(pageCount);
-//    print('============================');
 
     var text = "";
     var pageLabel = "";
@@ -316,19 +322,20 @@ class _ReadPagerState extends State<ReadPager> {
       text = "加载中";
     }
 
-    return ReadPagerItem(
-//      text: new Text(
-//        text,
-//        style: textStyle,
-//      ),
-      text: new TextCanvas(
-        text: text,
-        width: ReadTextWidth,
-        height: ReadTextHeight,
-        lineHeight: LineHeight,
+    return GestureDetector(
+      onTap: (){
+        widget.optionLayerKey.currentState.toggle();
+      },
+      child: ReadPagerItem(
+        text: new TextCanvas(
+          text: text,
+          width: ReadTextWidth,
+          height: ReadTextHeight,
+          lineHeight: LineHeight,
+        ),
+        title: title,
+        pageLabel: pageLabel,
       ),
-      title: title,
-      pageLabel: pageLabel,
     );
   }
 }

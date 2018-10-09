@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
+import 'package:seek_book/utils/screen_adaptation.dart';
+import 'package:sqflite/sqflite.dart';
 
 class BookDetailPage extends StatefulWidget {
   final Map bookInfo;
@@ -21,11 +23,15 @@ class _BookDetailState extends State<BookDetailPage> {
   var imgUrl = "";
   var updateTime = 0;
   var chapterList = [];
+  var bookActive = 0;
+
+  Map bookInfo;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    this.bookInfo = widget.bookInfo;
     this.loadData();
   }
 
@@ -36,18 +42,25 @@ class _BookDetailState extends State<BookDetailPage> {
         children: <Widget>[
           SafeArea(child: Text("xxx")),
           Container(
-            child: Text('${widget.bookInfo['name']}'),
+            child: Text('${bookInfo['name']}'),
           ),
           GestureDetector(
             onTap: () {
               toggleToSave();
             },
-            child: Text("追书"),
+            child: Text("${bookActive == 1 ? '取消' : '追书'}"),
           ),
           GestureDetector(
             onTap: () {},
             child: Text('阅读'),
           ),
+          imgUrl != ''
+              ? Image.network(
+                  imgUrl,
+                  width: dp(100),
+                )
+              : Text("封面"),
+          Text('追书状态：$bookActive'),
           Expanded(
             child: ListView.builder(
               itemBuilder: buildRow,
@@ -67,8 +80,23 @@ class _BookDetailState extends State<BookDetailPage> {
   }
 
   void loadData() async {
+    var name = this.bookInfo['name'];
+    var author = this.bookInfo['author'];
+    var url = this.bookInfo['url'];
+
+    var database = Globals.database;
+
+    var exist = await database.rawQuery(
+      'select * from Book where name=? and author=?',
+      [name, author],
+    );
+    if (exist.length > 0) {
+      setState(() {
+        bookActive = exist[0]['active'];
+      });
+    }
+
     Dio dio = new Dio();
-    var url = 'http://www.kenwen.com/cview/17/17265/';
     Response response = await dio.get(url);
     var document = parse(response.data);
     var imgUrl = 'http://www.kenwen.com' +
@@ -108,10 +136,33 @@ class _BookDetailState extends State<BookDetailPage> {
     });
     print(chapterList);
 
+    var chapters = json.encode(chapterList);
+
+    Map<String, dynamic> bookInfo;
+    await database.transaction((txn) async {
+      if (exist.length == 0) {
+        bookInfo = {
+          "name": name,
+          "author": author,
+          "imgUrl": imgUrl,
+          "url": url,
+          "site": 'www',
+          "updateTime": updateTime,
+          "chapters": chapters,
+          "currentPageIndex": 0,
+          "currentChapterIndex": 0,
+        };
+        await txn.insert('Book', bookInfo);
+      } else {
+        bookInfo = exist[0];
+      }
+    });
+
     setState(() {
       this.imgUrl = imgUrl;
       this.updateTime = dateTime.millisecondsSinceEpoch;
       this.chapterList = chapterList;
+      this.bookInfo = bookInfo;
     });
 
 //    var encode = json.encode(chapterList);
@@ -120,43 +171,24 @@ class _BookDetailState extends State<BookDetailPage> {
   }
 
   void toggleToSave() async {
-    print('1');
-    var name = widget.bookInfo['name'];
-    var author = widget.bookInfo['author'];
-    var url = widget.bookInfo['url'];
-    print(name);
-    print(author);
-    print(url);
-    print(updateTime);
-    var chapterList = json.encode(this.chapterList);
-    print(chapterList);
-    print(imgUrl);
-    print('啃文书库');
+    var name = bookInfo['name'];
+    var author = bookInfo['author'];
 
     var database = Globals.database;
-    List<Map> list = await database.rawQuery('SELECT * FROM Book');
-    print(list);
 
     await database.transaction((txn) async {
-      int id1 = await txn.rawInsert(
-          'INSERT INTO Book(name, author, imgUrl, url,site,updateTime,chapters,currentPageIndex,currentChapterIndex) VALUES("$name", "$author", "$imgUrl", "$url", "www", "$updateTime", \'${chapterList}\',0,0)');
-      print("inserted1: $id1");
+      var newState = (bookActive + 1) % 2;
+      await txn.update(
+        'Book',
+        {
+          'active': newState,
+        },
+        where: 'name=? and author=?',
+        whereArgs: [name, author],
+      );
+      setState(() {
+        bookActive = newState;
+      });
     });
-//    name TEXT, author TEXT, chapters Text, url Text, site Text, updateTime long,
-
-//// Update some record
-//    int count = await database.rawUpdate(
-//        'UPDATE Test SET name = ?, VALUE = ? WHERE name = ?',
-//        ["updated name", "9876", "some name"]);
-//    print("updated: $count");
-// Count the records
-//    count = Sqflite.firstIntValue(
-//        await database.rawQuery("SELECT COUNT(*) FROM Test"));
-////    assert(count == 2);
-//
-//// Delete a record
-//    count = await database
-//        .rawDelete('DELETE FROM Test WHERE name = ?', ['another name']);
-////    assert(count == 1);
   }
 }

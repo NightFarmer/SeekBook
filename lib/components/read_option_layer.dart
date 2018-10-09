@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:seek_book/utils/status_bar.dart';
 
 /// 阅读页选项弹出层
 class ReadOptionLayer extends StatefulWidget {
+  ReadOptionLayer({Key key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
-    return new _ReadOptionLayerState();
+    return new ReadOptionLayerState();
   }
 }
 
-class _ReadOptionLayerState extends State<ReadOptionLayer> {
+class ReadOptionLayerState extends State<ReadOptionLayer> {
+  var layerShow = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -21,16 +26,57 @@ class _ReadOptionLayerState extends State<ReadOptionLayer> {
 //    SystemChrome.setEnabledSystemUIOverlays([]);
     print("?????");
 
-    var index = SystemUiOverlay.values.indexOf(SystemUiOverlay.top);
-    List<SystemUiOverlay> newLays = []..addAll(SystemUiOverlay.values);
-    newLays.removeAt(index);
-    SystemChrome.setEnabledSystemUIOverlays(newLays);
+    StatusBar.hide();
 
     super.initState();
   }
 
+  void show() {
+    if (layerShow) return;
+    setState(() {
+      layerShow = true;
+    });
+    StatusBar.show();
+  }
+
+  void hide() {
+    if (!layerShow) return;
+    setState(() {
+      layerShow = false;
+    });
+    StatusBar.hide();
+  }
+
+  void toggle() {
+    if (layerShow) {
+      hide();
+    } else {
+      show();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    var topLayer = Container(
+      height: 100.0,
+      color: Colors.green.withOpacity(0.1),
+    );
+    var bottomLayer = Container(
+      height: 100.0,
+      color: Colors.green.withOpacity(0.1),
+    );
+    var children = <Widget>[
+      topLayer,
+      Expanded(child: Container()),
+      bottomLayer
+    ];
+    if (!layerShow) {
+      children = [];
+    }
+    return Container(
+      child: Column(
+        children: children,
+      ),
+    );
   }
 }

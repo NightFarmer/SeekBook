@@ -107,14 +107,18 @@ class _ReadPagerState extends State<ReadPager> {
         return;
       }
     });
+
+    this.currentPageIndex = widget.bookInfo['currentPageIndex'];
+    this.currentChapterIndex = widget.bookInfo['currentChapterIndex'];
+//    loadingMap[currentChapterIndex] = true;
+//    loadingMap[currentChapterIndex + 1] = true;
+//    loadingMap[currentChapterIndex - 1] = true;
     this.initReadState();
     super.initState();
   }
 
   initReadState() async {
 //    this.initPageIndex = widget.bookInfo['currentPageIndex'];
-    this.currentPageIndex = widget.bookInfo['currentPageIndex'];
-    this.currentChapterIndex = widget.bookInfo['currentChapterIndex'];
 //    this.initPageIndex = 1;
 //    print("init initPageIndex   $initPageIndex");
 //    loadingMap[currentChapterIndex] = true;
@@ -145,6 +149,7 @@ class _ReadPagerState extends State<ReadPager> {
 //      setState(() {});
       return;
     }
+//    print("save loading state  ${chapterIndex}");
     loadingMap[chapterIndex] = true;
     var url = chapterList[chapterIndex]['url'];
     if (chapterTextMap[url] != null) {
@@ -262,6 +267,7 @@ class _ReadPagerState extends State<ReadPager> {
 
   @override
   Widget build(BuildContext context) {
+    print("build  hole  page !!!!!");
     return NotificationListener(
       child: new PageView.builder(
         onPageChanged: (index) {

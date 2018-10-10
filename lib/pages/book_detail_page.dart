@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
+import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
+import 'package:seek_book/utils/status_bar.dart';
 import 'package:sqflite/sqflite.dart';
 
 class BookDetailPage extends StatefulWidget {
@@ -75,6 +78,27 @@ class _BookDetailState extends State<BookDetailPage> {
   Widget buildRow(context, index) {
     var item = chapterList[index];
     return GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (context) => ReadPage(bookInfo: {
+              'id': bookInfo['id'],
+              'name': bookInfo['name'],
+              'author': bookInfo['author'],
+              'url': bookInfo['url'],
+              'updateTime': bookInfo['updateTime'],
+              'imgUrl': bookInfo['imgUrl'],
+              'chapterList': json.decode(bookInfo['chapters']),
+              'site': bookInfo['site'],
+              'currentPageIndex': 0,
+              'currentChapterIndex': index,
+            }),
+          ),
+        );
+        StatusBar.show();
+//        loadData();
+      },
       child: Text("${item['title']}"),
     );
   }

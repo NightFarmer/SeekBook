@@ -113,6 +113,12 @@ class _ReadPagerState extends State<ReadPager> {
     }
     var url = chapterList[chapterIndex]['url'];
     if (chapterTextMap[url] != null) {
+//      print(chapterTextMap[url]);
+//      print(chapterPagerDataMap[url]);
+      if (chapterPagerDataMap[url] != null &&
+          chapterPagerDataMap[url].length == 0) {
+        calcPagerData(url);
+      }
       return;
     }
     print("loadChapterText =======");
@@ -124,6 +130,7 @@ class _ReadPagerState extends State<ReadPager> {
     if (existData.length > 0) {
       content = existData[0]['text'];
     } else {
+      await Future.delayed(Duration(milliseconds: 5000));
       Dio dio = new Dio();
 //    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
       Response response = await dio.get(url);
@@ -152,12 +159,14 @@ class _ReadPagerState extends State<ReadPager> {
     calcPagerData(url);
 //    this.pageEndIndexList = pageEndIndexList;
 
+//    if (chapterIndex == currentChapterIndex) {
     setState(() {});
+//    }
   }
 
   calcPagerData(url) {
     var exist = chapterPagerDataMap[url];
-    if (exist != null) {
+    if (exist != null && exist.length > 0) {
       return exist;
     }
     if (chapterTextMap[url] == null) {
@@ -282,30 +291,37 @@ class _ReadPagerState extends State<ReadPager> {
   Widget buildPage(int index) {
     print("buildPage========");
     var pageIndex = currentPageIndex + (index - initScrollIndex);
-    print('加载页 $pageIndex,  章节$currentChapterIndex');
+    var chapterIndex = currentChapterIndex;
 
 //    var chapterText = chapterTextCacheMap[pageIndex];
     List chapterList = widget.bookInfo['chapterList'];
-    var url = chapterList[currentChapterIndex]['url'];
-    var title = chapterList[currentChapterIndex]['title'];
+    var chapterList2 = chapterList[chapterIndex];
+    var url = chapterList2['url'];
+    var title = chapterList2['title'];
     var chapterText = chapterTextMap[url] ?? '';
-
     var pageCount = calcPagerData(url).length;
-    while (pageIndex > pageCount - 1 && chapterText != '') {
+
+    print(
+        '加载页 $pageIndex,  章节$currentChapterIndex, $title, ${chapterText.length}, $pageCount');
+
+    while (pageIndex > pageCount - 1) {
+      //当前章节有内容，且分页数大于0才参与多次分页
+      chapterIndex++;
       pageIndex -= pageCount;
       //翻页超过本章最后一页，加载下一章，并计算页数
       print("NNNNN $pageIndex  , $pageCount ");
-      url = chapterList[currentChapterIndex + 1]['url'];
-      title = chapterList[currentChapterIndex + 1]['title'];
+      url = chapterList[chapterIndex]['url'];
+//      title = chapterList[currentChapterIndex + 1]['title'];
       chapterText = chapterTextMap[url] ?? '';
       var parseChapterPagerList = calcPagerData(url);
       pageCount = parseChapterPagerList.length;
       print(parseChapterPagerList);
     }
-    while (pageIndex < 0 && chapterText != '') {
+    while (pageIndex < 0) {
       print("PPPPPPPPPPP");
-      url = chapterList[currentChapterIndex - 1]['url'];
-      title = chapterList[currentChapterIndex - 1]['title'];
+      chapterIndex--;
+      url = chapterList[chapterIndex]['url'];
+//      title = chapterList[currentChapterIndex - 1]['title'];
       chapterText = chapterTextMap[url] ?? '';
       pageCount = calcPagerData(url).length;
       pageIndex += pageCount;
@@ -314,8 +330,11 @@ class _ReadPagerState extends State<ReadPager> {
     var text = "";
     var pageLabel = "";
     var chapterTitle = "";
+    var chapter = chapterList[chapterIndex];
+    url = chapter['url'];
+    title = chapter['title'];
     var pageEndIndexList = chapterPagerDataMap[url];
-    if (pageEndIndexList != null) {
+    if (pageEndIndexList != null && pageEndIndexList.length > 0) {
       text = loadPageText(url, pageIndex);
       pageLabel = '${pageIndex + 1}/${pageEndIndexList.length}';
     } else {
@@ -323,7 +342,7 @@ class _ReadPagerState extends State<ReadPager> {
     }
 
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         widget.optionLayerKey.currentState.toggle();
       },
       child: ReadPagerItem(

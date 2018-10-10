@@ -31,8 +31,11 @@ class ChapterTextPainter extends CustomPainter {
       }
       xOffset += 1 * tp.size.width;
     }
-    print("新算法算出来的分页页码");
-    print(result);
+    if (result.length == 0 || result[result.length - 1] != allChart.length) {
+      result.add(allChart.length);
+    }
+//    print("新算法算出来的分页页码, 文本长度${text.length}");
+//    print(result);
     return result;
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/utils/status_bar.dart';
 
 /// 阅读页选项弹出层
@@ -59,7 +60,19 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
   Widget build(BuildContext context) {
     var topLayer = Container(
       height: 100.0,
-      color: Colors.green.withOpacity(0.1),
+      color: Colors.black,
+      child: SafeArea(
+        child: Container(
+          width: ScreenAdaptation.screenWidth,
+          color: Colors.lightGreen,
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Text("返回"),
+          ),
+        ),
+      ),
     );
     var bottomLayer = Container(
       height: 100.0,

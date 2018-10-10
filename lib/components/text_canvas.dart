@@ -120,6 +120,9 @@ class ChapterTextPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
+    if (oldDelegate is ChapterTextPainter) {
+      return oldDelegate.text != text;
+    }
     return false;
   }
 }

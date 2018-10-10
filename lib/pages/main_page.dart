@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:seek_book/pages/book_search_page.dart';
 import 'package:seek_book/pages/read_page.dart';
@@ -31,34 +32,46 @@ class _MainPageState extends State<MainPage> {
 //    ScreenAdaptation.designSize = 414.0;
 //    ScreenAdaptation.init(context);
 
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          SafeArea(child: Text('123123123')),
-          Container(
-            child: GestureDetector(
-              onTap: () async {
+    var scaffold = Container(
+      color: Colors.red,
+      child: SafeArea(
+          child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            Container(
+              child: GestureDetector(
+                onTap: () async {
 //                Navigator.pushNamed(context, '/search');
-                await Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (context) => BookSearchPage(),
-                  ),
-                );
-                loadData();
-              },
-              child: Text('search'),
+                  await Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => BookSearchPage(),
+                    ),
+                  );
+                  loadData();
+                },
+                child: Text('search'),
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: buildRow,
-              itemCount: bookList.length,
-            ),
-          )
-        ],
-      ),
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: buildRow,
+                itemCount: bookList.length,
+              ),
+            )
+          ],
+        ),
+      )),
     );
+    //浅色状态栏文字
+    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.light;
+//    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.dark;
+    return new AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: scaffold,
+      sized: false,
+    );
+//    return scaffold;
   }
 
   Widget buildRow(context, index) {

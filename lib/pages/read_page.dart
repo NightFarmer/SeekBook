@@ -21,28 +21,34 @@ class _ReadPageState extends State<ReadPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Positioned(
-            child: ReadPager(
-              bookInfo: widget.bookInfo,
-              optionLayerKey: optionLayerKey,
+    return WillPopScope(
+      child: Scaffold(
+        body: Stack(
+          children: <Widget>[
+            Positioned(
+              child: ReadPager(
+                bookInfo: widget.bookInfo,
+                optionLayerKey: optionLayerKey,
+              ),
+              left: 0.0,
+              top: 0.0,
+              right: 0.0,
+              bottom: 0.0,
             ),
-            left: 0.0,
-            top: 0.0,
-            right: 0.0,
-            bottom: 0.0,
-          ),
-          Positioned(
-            child: ReadOptionLayer(key: optionLayerKey),
-            left: 0.0,
-            top: 0.0,
-            right: 0.0,
-            bottom: 0.0,
-          ),
-        ],
+            Positioned(
+              child: ReadOptionLayer(key: optionLayerKey),
+              left: 0.0,
+              top: 0.0,
+              right: 0.0,
+              bottom: 0.0,
+            ),
+          ],
+        ),
       ),
+      onWillPop: () async {
+        return true;
+//        return false;
+      },
     );
   }
 }

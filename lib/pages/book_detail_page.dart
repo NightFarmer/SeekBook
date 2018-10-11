@@ -144,7 +144,20 @@ class _BookDetailState extends State<BookDetailPage> {
     print(dateTime);
 
     var chapters;
-    Map<String, dynamic> bookInfo;
+    Map<String, dynamic> bookInfo = {
+      "name": name,
+      "author": author,
+      "imgUrl": imgUrl,
+      "url": url,
+      "site": 'www',
+      "updateTime": dateTime.millisecondsSinceEpoch,
+      "currentPageIndex": 0,
+      "currentChapterIndex": 0,
+    };
+    if (exist.length > 0) {
+      bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
+      bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
+    }
     if (exist.length > 0 &&
         dateTime.millisecondsSinceEpoch == exist[0]["updateTime"]) {
       bookInfo = {
@@ -158,6 +171,8 @@ class _BookDetailState extends State<BookDetailPage> {
         "currentPageIndex": exist[0]["currentPageIndex"],
         "currentChapterIndex": exist[0]["currentChapterIndex"],
       };
+      chapters = exist[0]["chapters"];
+      print("存在相同时间戳缓存");
     } else {
       List chapterList = [];
       var groupIndex = 0;
@@ -191,8 +206,10 @@ class _BookDetailState extends State<BookDetailPage> {
           "currentPageIndex": 0,
           "currentChapterIndex": 0,
         };
+        print("插入");
         await txn.insert('Book', bookInfo);
       } else if (dateTime.millisecondsSinceEpoch != exist[0]["updateTime"]) {
+        print("更新");
         bookInfo["imgUrl"] = imgUrl;
         bookInfo["updateTime"] = dateTime.millisecondsSinceEpoch;
         bookInfo["chapters"] = chapters;
@@ -212,7 +229,7 @@ class _BookDetailState extends State<BookDetailPage> {
     setState(() {
       this.imgUrl = imgUrl;
       this.updateTime = dateTime.millisecondsSinceEpoch;
-      this.chapterList = chapterList;
+      this.chapterList = json.decode(chapters);
       this.bookInfo = bookInfo;
     });
 

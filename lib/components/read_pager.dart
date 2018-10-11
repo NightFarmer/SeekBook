@@ -13,9 +13,10 @@ import 'package:seek_book/components/read_pager_item.dart';
 import 'package:seek_book/components/text_canvas.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/globals.dart' as Globals;
+import 'package:seek_book/utils/status_bar.dart';
 
 class ReadPager extends StatefulWidget {
-  Map bookInfo;
+  final Map bookInfo;
   final GlobalKey<ReadOptionLayerState> optionLayerKey;
 
   ReadPager({
@@ -80,7 +81,6 @@ class _ReadPagerState extends State<ReadPager> {
 
     this.pageController = PageController(initialPage: initScrollIndex);
     this.pageController.addListener(() {
-      widget.optionLayerKey.currentState.hide();
 //      var currentPageIndex =
 //          pageController.page - initScrollIndex + initPageIndex;
 //      print(currentPageIndex);
@@ -112,9 +112,21 @@ class _ReadPagerState extends State<ReadPager> {
 
     this.currentPageIndex = widget.bookInfo['currentPageIndex'];
     this.currentChapterIndex = widget.bookInfo['currentChapterIndex'];
-//    loadingMap[currentChapterIndex] = true;
-//    loadingMap[currentChapterIndex + 1] = true;
-//    loadingMap[currentChapterIndex - 1] = true;
+    Globals.database.update(
+      'Book',
+      {
+        "currentPageIndex": currentPageIndex,
+        "currentChapterIndex": currentChapterIndex,
+      },
+      where: 'name=? and author=?',
+      whereArgs: [
+        widget.bookInfo['name'],
+        widget.bookInfo['author'],
+      ],
+    );
+    loadingMap[currentChapterIndex] = true;
+    loadingMap[currentChapterIndex + 1] = true;
+    loadingMap[currentChapterIndex - 1] = true;
     this.initReadState();
     super.initState();
   }
@@ -127,6 +139,8 @@ class _ReadPagerState extends State<ReadPager> {
 //    loadingMap[currentChapterIndex + 1] = true;
 //    loadingMap[currentChapterIndex - 1] = true;
     await Future.delayed(Duration(milliseconds: 350));
+    StatusBar.hide();
+
 //    await Future.wait([
 //      this.loadChapterText(currentChapterIndex, false),
 //      this.loadChapterText(currentChapterIndex + 1, false),
@@ -204,7 +218,7 @@ class _ReadPagerState extends State<ReadPager> {
     loadingMap.remove(chapterIndex); //加载完成，移除加载状态
 
 //    if (chapterIndex == currentChapterIndex) {
-    if (reLayout) {
+    if (reLayout && this.mounted) {
       setState(() {});
     }
 //    }
@@ -357,6 +371,7 @@ class _ReadPagerState extends State<ReadPager> {
     print("加载状态 $chapterIndex  $loading  最多章节数量${chapterList.length}");
 //    print("loadingggggggggggggggg   $loading $chapterIndex");
     if (loading == null) {
+      print("load A");
 //    var chapterText = chapterTextCacheMap[pageIndex];
 //      print("aaaaaaaaaaa , $chapterIndex, ${chapterList.length}");
 
@@ -367,12 +382,15 @@ class _ReadPagerState extends State<ReadPager> {
 //          '加载页 $pageIndex,  章节$currentChapterIndex, $title, ${chapterText.length}, $pageCount');
 
       if (pageIndex > pageCount - 1) {
+        print("load AA");
         print("${chapterIndex}  ${chapterList.length}");
         if (chapterIndex + 1 > chapterList.length - 1) {
+          print("load AAA");
           finishPage = true;
 //          break;
           //越界停止
         } else {
+          print("load AAB");
           //当前章节有内容，且分页数大于0才参与多次分页
           chapterIndex++;
           pageIndex -= pageCount;
@@ -387,11 +405,14 @@ class _ReadPagerState extends State<ReadPager> {
         }
       }
       if (pageIndex < 0) {
+        print("load AB");
         if (chapterIndex - 1 < 0) {
+          print("load ABA");
           blankPage = true;
 //          break;
           //越界停止
         } else {
+          print("load BAB");
           print("PPPPPPPPPPP  ${chapterIndex - 1}");
           chapterIndex--;
           url = chapterList[chapterIndex]['url'];
@@ -402,23 +423,30 @@ class _ReadPagerState extends State<ReadPager> {
         }
       }
     } else {
+      print("load B");
       //加载失败或加载中时，若翻页，则跳章节，
-      if (pageIndex > 0) {
+      if (pageIndex > 0 && pageIndex != currentPageIndex) {
+        print("load BA");
         if (chapterIndex + 1 > chapterList.length - 1) {
+          print("load BAA");
           finishPage = true;
           title = "";
           //越界停止
         } else {
+          print("load BAB");
           chapterIndex++;
           pageIndex = 0;
           title = chapterList[chapterIndex]['title'];
         }
       }
       if (pageIndex < 0) {
+        print("load BB");
         if (chapterIndex - 1 < 0) {
+          print("load BBA");
           blankPage = true;
           //越界停止
         } else {
+          print("load BBB");
           chapterIndex--;
           pageIndex = 0;
           title = chapterList[chapterIndex]['title'];

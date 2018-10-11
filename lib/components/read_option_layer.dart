@@ -27,7 +27,7 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
 //    SystemChrome.setEnabledSystemUIOverlays([]);
     print("?????");
 
-    StatusBar.hide();
+//    StatusBar.hide();
 
     super.initState();
   }

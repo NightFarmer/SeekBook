@@ -1,9 +1,11 @@
 // 翻页阅读容器组件
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/components/read_option_layer.dart';
@@ -267,7 +269,7 @@ class _ReadPagerState extends State<ReadPager> {
 
   @override
   Widget build(BuildContext context) {
-    print("build  hole  page !!!!!");
+    print("build  hole  page !!!!! ${Platform.operatingSystem}");
     return NotificationListener(
       child: new PageView.builder(
         onPageChanged: (index) {
@@ -427,6 +429,8 @@ class _ReadPagerState extends State<ReadPager> {
     var text = "";
     var pageLabel = "";
 
+    Widget contentWidget = Container();
+
     if (blankPage) {
       text = '越界了';
       pageLabel = '';
@@ -436,14 +440,21 @@ class _ReadPagerState extends State<ReadPager> {
       text = '没有最新章节';
       pageLabel = '';
       title = '';
+      contentWidget = buildTextCanvas(text);
     } else if (loading == true) {
       text = '加载中1';
       pageLabel = '';
       title = title ?? '';
+      contentWidget = Container(
+        child: CupertinoActivityIndicator(
+          radius: dp(20),
+        ),
+      );
     } else if (loading == false) {
       text = '加载失败';
       pageLabel = '';
       title = title ?? '';
+      contentWidget = buildTextCanvas(text);
     } else {
       var chapter = chapterList[chapterIndex];
       url = chapter['url'];
@@ -453,11 +464,18 @@ class _ReadPagerState extends State<ReadPager> {
       if (pageEndIndexList != null && pageEndIndexList.length > 0) {
         text = loadPageText(url, pageIndex);
         pageLabel = '${pageIndex + 1}/${pageEndIndexList.length}';
+        contentWidget = buildTextCanvas(text);
       } else {
         //最初始化的加载，没有在加载状态中
         title = chapterList[currentChapterIndex]['title'];
 //        title = '123123-----$currentPageIndex';
         text = "加载中2";
+//        contentWidget = buildTextCanvas(text);
+        contentWidget = Container(
+          child: CupertinoActivityIndicator(
+            radius: dp(20),
+          ),
+        );
       }
     }
 
@@ -466,15 +484,19 @@ class _ReadPagerState extends State<ReadPager> {
         widget.optionLayerKey.currentState.toggle();
       },
       child: ReadPagerItem(
-        text: new TextCanvas(
-          text: text,
-          width: ReadTextWidth,
-          height: ReadTextHeight,
-          lineHeight: LineHeight,
-        ),
+        text: contentWidget,
         title: title,
         pageLabel: pageLabel,
       ),
+    );
+  }
+
+  TextCanvas buildTextCanvas(String text) {
+    return new TextCanvas(
+      text: text,
+      width: ReadTextWidth,
+      height: ReadTextHeight,
+      lineHeight: LineHeight,
     );
   }
 }

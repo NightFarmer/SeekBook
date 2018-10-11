@@ -8,12 +8,29 @@ import android.view.WindowManager
 
 import io.flutter.app.FlutterActivity
 import io.flutter.plugins.GeneratedPluginRegistrant
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.Result;
+
 
 class MainActivity() : FlutterActivity() {
+
+    private val CHANNEL = "seekbook.nightfarmer.top/statusbar"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GeneratedPluginRegistrant.registerWith(this)
         setStatusBarFullTransparent();
+
+        MethodChannel(flutterView, CHANNEL).setMethodCallHandler { call, result ->
+            if (call.method == "show") {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)  //显示状态栏
+            } else if (call.method == "hide") {
+                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)  //隐藏状态栏
+            }
+            result.success(true)
+        }
     }
 
     /**

@@ -83,17 +83,17 @@ class _BookDetailState extends State<BookDetailPage> {
           context,
           CupertinoPageRoute(
             builder: (context) => ReadPage(bookInfo: {
-              'id': bookInfo['id'],
-              'name': bookInfo['name'],
-              'author': bookInfo['author'],
-              'url': bookInfo['url'],
-              'updateTime': bookInfo['updateTime'],
-              'imgUrl': bookInfo['imgUrl'],
-              'chapterList': json.decode(bookInfo['chapters']),
-              'site': bookInfo['site'],
-              'currentPageIndex': 0,
-              'currentChapterIndex': index,
-            }),
+                  'id': bookInfo['id'],
+                  'name': bookInfo['name'],
+                  'author': bookInfo['author'],
+                  'url': bookInfo['url'],
+                  'updateTime': bookInfo['updateTime'],
+                  'imgUrl': bookInfo['imgUrl'],
+                  'chapterList': json.decode(bookInfo['chapters']),
+                  'site': bookInfo['site'],
+                  'currentPageIndex': 0,
+                  'currentChapterIndex': index,
+                }),
           ),
         );
         StatusBar.show();
@@ -143,26 +143,41 @@ class _BookDetailState extends State<BookDetailPage> {
     );
     print(dateTime);
 
-    List chapterList = [];
-    var groupIndex = 0;
-    document.querySelector('#list dl').children.forEach((row) {
-      var chapterRow = row.querySelector('a');
-      if (chapterRow == null) {
-        groupIndex++;
-        return;
-      }
-      if (groupIndex > 1) {
-        chapterList.add({
-          'title': chapterRow.text,
-          'url': url + chapterRow.attributes['href'],
-        });
-      }
-    });
-    print(chapterList);
-
-    var chapters = json.encode(chapterList);
-
+    var chapters;
     Map<String, dynamic> bookInfo;
+    if (exist.length > 0 &&
+        dateTime.millisecondsSinceEpoch == exist[0]["updateTime"]) {
+      bookInfo = {
+        "name": exist[0]["name"],
+        "author": exist[0]["author"],
+        "imgUrl": exist[0]["imgUrl"],
+        "url": exist[0]["url"],
+        "site": exist[0]["site"],
+        "updateTime": exist[0]["updateTime"],
+        "chapters": exist[0]["chapters"],
+        "currentPageIndex": exist[0]["currentPageIndex"],
+        "currentChapterIndex": exist[0]["currentChapterIndex"],
+      };
+    } else {
+      List chapterList = [];
+      var groupIndex = 0;
+      document.querySelector('#list dl').children.forEach((row) {
+        var chapterRow = row.querySelector('a');
+        if (chapterRow == null) {
+          groupIndex++;
+          return;
+        }
+        if (groupIndex > 1) {
+          chapterList.add({
+            'title': chapterRow.text,
+            'url': url + chapterRow.attributes['href'],
+          });
+        }
+      });
+      print(chapterList);
+      chapters = json.encode(chapterList);
+    }
+
     await database.transaction((txn) async {
       if (exist.length == 0) {
         bookInfo = {
@@ -171,14 +186,26 @@ class _BookDetailState extends State<BookDetailPage> {
           "imgUrl": imgUrl,
           "url": url,
           "site": 'www',
-          "updateTime": updateTime,
+          "updateTime": dateTime.millisecondsSinceEpoch,
           "chapters": chapters,
           "currentPageIndex": 0,
           "currentChapterIndex": 0,
         };
         await txn.insert('Book', bookInfo);
-      } else {
-        bookInfo = exist[0];
+      } else if (dateTime.millisecondsSinceEpoch != exist[0]["updateTime"]) {
+        bookInfo["imgUrl"] = imgUrl;
+        bookInfo["updateTime"] = dateTime.millisecondsSinceEpoch;
+        bookInfo["chapters"] = chapters;
+        await txn.update(
+          'Book',
+          {
+            "imgUrl": imgUrl,
+            "updateTime": updateTime,
+            "chapters": chapters,
+          },
+          where: "name=? and author=?",
+          whereArgs: [name, author],
+        );
       }
     });
 

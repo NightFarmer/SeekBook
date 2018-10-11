@@ -60,12 +60,13 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
 //    ScreenAdaptation.designSize = 414.0;
 //    ScreenAdaptation.init(context);
-
     return new MaterialApp(
-      title: 'Flutter Demo',
+      title: '书探',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+//        primarySwatch: Colors.blue,
+//        primarySwatch: Colors.blue,
         platform: TargetPlatform.android,
+        primaryColor: Colors.black,
 //        fontFamily: "ReadFont",
       ),
       home: new MainPage(),

@@ -189,10 +189,10 @@ class _ReadPagerState extends State<ReadPager> {
           return;
         }
         //todo 开发环境暂时不存
-//        await txn.insert('chapter', {
-//          "id": url,
-//          "text": content,
-//        });
+        await txn.insert('chapter', {
+          "id": url,
+          "text": content,
+        });
       });
     }
     chapterTextMap[url] = content;
@@ -364,37 +364,40 @@ class _ReadPagerState extends State<ReadPager> {
 //      print(
 //          '加载页 $pageIndex,  章节$currentChapterIndex, $title, ${chapterText.length}, $pageCount');
 
-      while (pageIndex > pageCount - 1) {
+      if (pageIndex > pageCount - 1) {
         print("${chapterIndex}  ${chapterList.length}");
         if (chapterIndex + 1 > chapterList.length - 1) {
           finishPage = true;
-          break;
-        } //越界停止
-        //当前章节有内容，且分页数大于0才参与多次分页
-        chapterIndex++;
-        pageIndex -= pageCount;
-        //翻页超过本章最后一页，加载下一章，并计算页数
-        print("NNNNN $pageIndex  , $pageCount ");
-        url = chapterList[chapterIndex]['url'];
+//          break;
+          //越界停止
+        } else {
+          //当前章节有内容，且分页数大于0才参与多次分页
+          chapterIndex++;
+          pageIndex -= pageCount;
+          //翻页超过本章最后一页，加载下一章，并计算页数
+          print("NNNNN $pageIndex  , $pageCount ");
+          url = chapterList[chapterIndex]['url'];
 //      title = chapterList[currentChapterIndex + 1]['title'];
 //        chapterText = chapterTextMap[url] ?? '';
-        var parseChapterPagerList = calcPagerData(url);
-        pageCount = parseChapterPagerList.length;
-        print(parseChapterPagerList);
+          var parseChapterPagerList = calcPagerData(url);
+          pageCount = parseChapterPagerList.length;
+          print(parseChapterPagerList);
+        }
       }
-      while (pageIndex < 0) {
+      if (pageIndex < 0) {
         if (chapterIndex - 1 < 0) {
           blankPage = true;
-          break;
-        } //越界停止
-
-        print("PPPPPPPPPPP  ${chapterIndex - 1}");
-        chapterIndex--;
-        url = chapterList[chapterIndex]['url'];
+//          break;
+          //越界停止
+        } else {
+          print("PPPPPPPPPPP  ${chapterIndex - 1}");
+          chapterIndex--;
+          url = chapterList[chapterIndex]['url'];
 //      title = chapterList[currentChapterIndex - 1]['title'];
 //        chapterText = chapterTextMap[url] ?? '';
-        pageCount = calcPagerData(url).length;
-        pageIndex += pageCount;
+          pageCount = calcPagerData(url).length;
+          pageIndex += pageCount;
+        }
       }
     } else {
       //加载失败或加载中时，若翻页，则跳章节，
@@ -451,6 +454,9 @@ class _ReadPagerState extends State<ReadPager> {
         text = loadPageText(url, pageIndex);
         pageLabel = '${pageIndex + 1}/${pageEndIndexList.length}';
       } else {
+        //最初始化的加载，没有在加载状态中
+        title = chapterList[currentChapterIndex]['title'];
+//        title = '123123-----$currentPageIndex';
         text = "加载中2";
       }
     }

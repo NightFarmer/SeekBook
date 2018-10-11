@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:seek_book/components/top_bar.dart';
 import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
 import 'package:seek_book/pages/read_page.dart';
@@ -30,6 +31,8 @@ class _BookDetailState extends State<BookDetailPage> {
 
   Map bookInfo;
 
+  var orderBy = 0;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -41,11 +44,15 @@ class _BookDetailState extends State<BookDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: TopBar(),
       body: Column(
         children: <Widget>[
           SafeArea(child: Text("xxx")),
           Container(
             child: Text('${bookInfo['name']}'),
+          ),
+          Container(
+            child: Text('${bookInfo['author']}'),
           ),
           GestureDetector(
             onTap: () {
@@ -64,6 +71,14 @@ class _BookDetailState extends State<BookDetailPage> {
                 )
               : Text("封面"),
           Text('追书状态：$bookActive'),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                orderBy = (orderBy + 1) % 2;
+              });
+            },
+            child: Text("倒序"),
+          ),
           Expanded(
             child: ListView.builder(
               itemBuilder: buildRow,
@@ -76,6 +91,7 @@ class _BookDetailState extends State<BookDetailPage> {
   }
 
   Widget buildRow(context, index) {
+    index = orderBy == 0 ? index : (chapterList.length - 1 - index);
     var item = chapterList[index];
     return GestureDetector(
       onTap: () async {
@@ -116,8 +132,10 @@ class _BookDetailState extends State<BookDetailPage> {
     );
     if (exist.length > 0) {
       setState(() {
-        bookActive = exist[0]['active'];
+        bookActive = exist[0]['active'] ?? 0;
       });
+    } else {
+      bookActive = 0;
     }
 
     Dio dio = new Dio();
@@ -144,22 +162,23 @@ class _BookDetailState extends State<BookDetailPage> {
     print(dateTime);
 
     var chapters;
+    var currentUpdatetime = dateTime.millisecondsSinceEpoch;
     Map<String, dynamic> bookInfo = {
       "name": name,
       "author": author,
       "imgUrl": imgUrl,
       "url": url,
       "site": 'www',
-      "updateTime": dateTime.millisecondsSinceEpoch,
+      "updateTime": currentUpdatetime,
       "currentPageIndex": 0,
       "currentChapterIndex": 0,
+      "bookActive": 0,
     };
     if (exist.length > 0) {
       bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
       bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
     }
-    if (exist.length > 0 &&
-        dateTime.millisecondsSinceEpoch == exist[0]["updateTime"]) {
+    if (exist.length > 0 && currentUpdatetime == exist[0]["updateTime"]) {
       bookInfo = {
         "name": exist[0]["name"],
         "author": exist[0]["author"],
@@ -170,6 +189,7 @@ class _BookDetailState extends State<BookDetailPage> {
         "chapters": exist[0]["chapters"],
         "currentPageIndex": exist[0]["currentPageIndex"],
         "currentChapterIndex": exist[0]["currentChapterIndex"],
+        "bookActive": exist[0]["bookActive"],
       };
       chapters = exist[0]["chapters"];
       print("存在相同时间戳缓存");
@@ -201,23 +221,24 @@ class _BookDetailState extends State<BookDetailPage> {
           "imgUrl": imgUrl,
           "url": url,
           "site": 'www',
-          "updateTime": dateTime.millisecondsSinceEpoch,
+          "updateTime": currentUpdatetime,
           "chapters": chapters,
           "currentPageIndex": 0,
           "currentChapterIndex": 0,
+          "bookActive": 0,
         };
         print("插入");
         await txn.insert('Book', bookInfo);
-      } else if (dateTime.millisecondsSinceEpoch != exist[0]["updateTime"]) {
-        print("更新");
+      } else if (currentUpdatetime != exist[0]["updateTime"]) {
+        print("更新 ${currentUpdatetime}");
         bookInfo["imgUrl"] = imgUrl;
-        bookInfo["updateTime"] = dateTime.millisecondsSinceEpoch;
+        bookInfo["updateTime"] = currentUpdatetime;
         bookInfo["chapters"] = chapters;
         await txn.update(
           'Book',
           {
             "imgUrl": imgUrl,
-            "updateTime": updateTime,
+            "updateTime": currentUpdatetime,
             "chapters": chapters,
           },
           where: "name=? and author=?",
@@ -226,9 +247,10 @@ class _BookDetailState extends State<BookDetailPage> {
       }
     });
 
+    if (!mounted) return;
     setState(() {
       this.imgUrl = imgUrl;
-      this.updateTime = dateTime.millisecondsSinceEpoch;
+      this.updateTime = currentUpdatetime;
       this.chapterList = json.decode(chapters);
       this.bookInfo = bookInfo;
     });

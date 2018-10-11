@@ -80,7 +80,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
           ),
         );
       },
-      child: Text('${item['name']}'),
+      child: Text('${item['name']}--- ${item['author']}'),
     );
   }
 

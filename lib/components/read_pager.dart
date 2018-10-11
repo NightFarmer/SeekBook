@@ -124,9 +124,16 @@ class _ReadPagerState extends State<ReadPager> {
         widget.bookInfo['author'],
       ],
     );
-    loadingMap[currentChapterIndex] = true;
-    loadingMap[currentChapterIndex + 1] = true;
-    loadingMap[currentChapterIndex - 1] = true;
+//    var chapterList = widget.bookInfo['chapterList'];
+    if (currentChapterIndex < chapterList.length) {
+      loadingMap[currentChapterIndex] = true;
+    }
+    if (currentChapterIndex + 1 < chapterList.length) {
+      loadingMap[currentChapterIndex + 1] = true;
+    }
+    if (currentChapterIndex - 1 >= 0) {
+      loadingMap[currentChapterIndex - 1] = true;
+    }
     this.initReadState();
     super.initState();
   }
@@ -161,10 +168,12 @@ class _ReadPagerState extends State<ReadPager> {
 //    });
     var chapterList = widget.bookInfo['chapterList'];
     if (chapterIndex < 0 || chapterIndex > chapterList.length - 1) {
-//      loadingMap.remove(chapterIndex); //不在章节索引中，移除加载状态
+      loadingMap.remove(chapterIndex); //不在章节索引中，移除加载状态
 //      setState(() {});
+      print("${chapterIndex} 越界");
       return;
     }
+    print("${chapterIndex} bu越界");
 //    print("save loading state  ${chapterIndex}");
     loadingMap[chapterIndex] = true;
     var url = chapterList[chapterIndex]['url'];
@@ -450,6 +459,20 @@ class _ReadPagerState extends State<ReadPager> {
           chapterIndex--;
           pageIndex = 0;
           title = chapterList[chapterIndex]['title'];
+
+//          //如果是从完结提示页向左滑，则加载上一章最后一页
+//          print('$currentChapterIndex,  ${chapterList.length}');
+//          if (currentChapterIndex == chapterList.length) {
+//            var url = chapterList[chapterIndex]['url'];
+//            var chapterPagerList = chapterPagerDataMap[url];
+//            print("取 章节 ${chapterIndex - 1}  ${chapterPagerList}");
+//            if (chapterPagerList == null || chapterPagerList.length == 0) {
+//              pageIndex = 0;
+//            } else {
+//              pageIndex = chapterPagerList.length - 1;
+//              loading = null;
+//            }
+//          }
         }
       }
     }
@@ -487,6 +510,7 @@ class _ReadPagerState extends State<ReadPager> {
       var chapter = chapterList[chapterIndex];
       url = chapter['url'];
       title = chapter['title'];
+      print(title);
       var pageEndIndexList = chapterPagerDataMap[url];
 //      print('bbbbbbb ${chapterIndex}  ${url}');
       if (pageEndIndexList != null && pageEndIndexList.length > 0) {

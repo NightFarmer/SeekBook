@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/components/top_bar.dart';
 import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
@@ -124,134 +125,21 @@ class _BookDetailState extends State<BookDetailPage> {
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
 
-    var database = Globals.database;
-
-    var exist = await database.rawQuery(
-      'select * from Book where name=? and author=?',
-      [name, author],
-    );
-    if (exist.length > 0) {
-      setState(() {
-        bookActive = exist[0]['active'] ?? 0;
-      });
-    } else {
-      bookActive = 0;
-    }
-
-    Dio dio = new Dio();
-    Response response = await dio.get(url);
-    var document = parse(response.data);
-    var imgUrl = 'http://www.kenwen.com' +
-        document.querySelector('#fmimg img').attributes['src'];
-    print(imgUrl);
-    var updateTimeStr = document.querySelector('#info').children[3].text;
-    print(updateTimeStr);
-    var split = updateTimeStr.replaceAll('最后更新：', '').split(' ');
-    var dateStr = split[0];
-    var timeStr = split[1];
-    var split2 = dateStr.split('/');
-    var split3 = timeStr.split(':');
-    var dateTime = new DateTime(
-      int.parse(split2[0]),
-      int.parse(split2[1]),
-      int.parse(split2[2]),
-      int.parse(split3[0]),
-      int.parse(split3[1]),
-      int.parse(split3[2]),
-    );
-    print(dateTime);
-
-    var chapters;
-    var currentUpdatetime = dateTime.millisecondsSinceEpoch;
-    Map<String, dynamic> bookInfo = {
-      "name": name,
-      "author": author,
-      "imgUrl": imgUrl,
-      "url": url,
-      "site": 'www',
-      "updateTime": currentUpdatetime,
-      "currentPageIndex": 0,
-      "currentChapterIndex": 0,
-      "bookActive": 0,
-    };
-    if (exist.length > 0) {
-      bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
-      bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
-    }
-    if (exist.length > 0 && currentUpdatetime == exist[0]["updateTime"]) {
-      bookInfo = {
-        "name": exist[0]["name"],
-        "author": exist[0]["author"],
-        "imgUrl": exist[0]["imgUrl"],
-        "url": exist[0]["url"],
-        "site": exist[0]["site"],
-        "updateTime": exist[0]["updateTime"],
-        "chapters": exist[0]["chapters"],
-        "currentPageIndex": exist[0]["currentPageIndex"],
-        "currentChapterIndex": exist[0]["currentChapterIndex"],
-        "bookActive": exist[0]["bookActive"],
-      };
-      chapters = exist[0]["chapters"];
-      print("存在相同时间戳缓存");
-    } else {
-      List chapterList = [];
-      var groupIndex = 0;
-      document.querySelector('#list dl').children.forEach((row) {
-        var chapterRow = row.querySelector('a');
-        if (chapterRow == null) {
-          groupIndex++;
-          return;
-        }
-        if (groupIndex > 1) {
-          chapterList.add({
-            'title': chapterRow.text,
-            'url': url + chapterRow.attributes['href'],
-          });
-        }
-      });
-      print(chapterList);
-      chapters = json.encode(chapterList);
-    }
-
-    await database.transaction((txn) async {
-      if (exist.length == 0) {
-        bookInfo = {
-          "name": name,
-          "author": author,
-          "imgUrl": imgUrl,
-          "url": url,
-          "site": 'www',
-          "updateTime": currentUpdatetime,
-          "chapters": chapters,
-          "currentPageIndex": 0,
-          "currentChapterIndex": 0,
-          "bookActive": 0,
-        };
-        print("插入");
-        await txn.insert('Book', bookInfo);
-      } else if (currentUpdatetime != exist[0]["updateTime"]) {
-        print("更新 ${currentUpdatetime}");
-        bookInfo["imgUrl"] = imgUrl;
-        bookInfo["updateTime"] = currentUpdatetime;
-        bookInfo["chapters"] = chapters;
-        await txn.update(
-          'Book',
-          {
-            "imgUrl": imgUrl,
-            "updateTime": currentUpdatetime,
-            "chapters": chapters,
-          },
-          where: "name=? and author=?",
-          whereArgs: [name, author],
-        );
+    var bookInfo = BookSiteKenWen().bookDetail(name, author, url, (exist) {
+      if (exist.length > 0) {
+        setState(() {
+          bookActive = exist[0]['active'] ?? 0;
+        });
+      } else {
+        bookActive = 0;
       }
     });
 
     if (!mounted) return;
     setState(() {
-      this.imgUrl = imgUrl;
-      this.updateTime = currentUpdatetime;
-      this.chapterList = json.decode(chapters);
+      this.imgUrl = bookInfo['imgUrl'];
+      this.updateTime = bookInfo['imgUrl'];
+      this.chapterList = json.decode(bookInfo['chapters']);
       this.bookInfo = bookInfo;
     });
 

@@ -23,6 +23,7 @@ dependencies:
   dio: 1.0.6
   sqflite: any
   battery: 0.2.3
+  shared_preferences: 0.4.3
 
 dev_dependencies:
   flutter_test:

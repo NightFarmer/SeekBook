@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/pages/book_detail_page.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:dio/dio.dart';
@@ -85,26 +86,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
   }
 
   void searchBook() async {
-    Dio dio = new Dio();
-    var book = '逆天邪神';
-    var url = 'https://sou.xanbhx.com/search?siteid=kenwencom&q=${book}';
-    Response response = await dio.get(url);
-    var document = parse(response.data);
-    var querySelector = document.querySelectorAll('ul li');
-    var resultList = querySelector
-        .where((it) => it.querySelector('.s1').text != '作品分类')
-        .map((row) {
-      var bookLink = row.querySelector('.s2 a');
-      var name = bookLink.text.trim();
-      var url = bookLink.attributes['href'].trim();
-      var author = row.querySelector('.s4').text.trim();
-      return {
-        "name": name,
-        "url": url,
-        "author": author,
-      };
-    }).toList();
-    print(resultList);
+    var resultList = await BookSiteKenWen().searchBook(_controller.text);
     setState(() {
       this.resultList = resultList;
     });

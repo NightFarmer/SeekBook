@@ -45,7 +45,7 @@ class MyAppState extends State<MyApp> {
       onCreate: (Database db, int version) async {
         // When creating the db, create the table
         await db.execute(
-          "CREATE TABLE Book (id INTEGER PRIMARY KEY, name TEXT, author TEXT, chapters Text, url Text, site Text, updateTime long, imgUrl Text, currentPageIndex INTEGER,currentChapterIndex INTEGER,active int)",
+          "CREATE TABLE Book (id INTEGER PRIMARY KEY, name TEXT, author TEXT, chapters Text, url Text, site Text, updateTime long, imgUrl Text, currentPageIndex INTEGER,currentChapterIndex INTEGER,active int,hasNew int)",
         );
         await db
             .execute('create table chapter (id String primary key, text text)');
@@ -61,7 +61,6 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
 //    ScreenAdaptation.designSize = 414.0;
 //    ScreenAdaptation.init(context);
-
 
 //    SystemChrome.setPreferredOrientations([
 //      DeviceOrientation.landscapeRight,

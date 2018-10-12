@@ -347,18 +347,18 @@ class _ReadPagerState extends State<ReadPager> {
       child: Listener(
         child: pageView,
         onPointerDown: (point) {
-          downPoint = point;
+          downPoint = point.position;
         },
         onPointerMove: (point) {
-          downPoint = point;
+          downPoint = Offset(-1.0, -1.0);
         },
         onPointerUp: (point) {
           if (downPoint == null) return;
           if (pageController.page.round() != pageController.page) return;
-          widget.optionLayerKey.currentState.toggle();
-          if (downPoint.position.dx == point.position.dx) {
+          if (downPoint.dx == point.position.dx) {
             //点击释放
             // 判断点击位置，弹出option或翻页
+            widget.optionLayerKey.currentState.toggle();
           } else {
             //拖动释放
           }
@@ -369,7 +369,7 @@ class _ReadPagerState extends State<ReadPager> {
     );
   }
 
-  PointerEvent downPoint;
+  Offset downPoint;
 
   String loadPageText(url, int pageIndex) {
     var pageEndIndexList = chapterPagerDataMap[url];

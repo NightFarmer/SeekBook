@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/utils/status_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 阅读页选项弹出层
 class ReadOptionLayer extends StatefulWidget {
@@ -32,6 +33,39 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
 //    StatusBar.hide();
 
     super.initState();
+
+    initScreenOrientation();
+//    print("1111111111111111111111111");
+  }
+
+//  void
+
+  void initScreenOrientation() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+//    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+    var orientation = prefs.getString('orientation');
+    if (orientation == 'landscape') {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    } else if (orientation == 'portrait') {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
   }
 
   void show() {

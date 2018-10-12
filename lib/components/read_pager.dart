@@ -166,6 +166,10 @@ class _ReadPagerState extends State<ReadPager> {
       return;
     }
 //    print("${chapterIndex} bu越界");
+    /// 若已经处于加载状态，忽略重复加载请求
+    if (loadingMap[chapterIndex]) {
+      return;
+    }
     loadingMap[chapterIndex] = true;
     var url = chapterList[chapterIndex]['url'];
     if (chapterTextMap[url] != null) {

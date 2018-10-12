@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -50,9 +49,9 @@ class _ReadPagerState extends State<ReadPager> {
 //  var content = "";
 
   TextStyle textStyle;
-  double ReadTextWidth;
-  double ReadTextHeight;
-  double LineHeight;
+  double readTextWidth;
+  double readTextHeight;
+  double lineHeight;
 
   PageController pageController;
 
@@ -63,12 +62,12 @@ class _ReadPagerState extends State<ReadPager> {
 
   @override
   void initState() {
-    ReadTextWidth = ScreenAdaptation.screenWidth - dp(32);
-    ReadTextHeight =
+    readTextWidth = ScreenAdaptation.screenWidth - dp(32);
+    readTextHeight =
         ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
-    LineHeight = dp(27);
-    var lineNum = (ReadTextHeight / LineHeight).floor();
-    LineHeight = (ReadTextHeight / lineNum).floorToDouble();
+    lineHeight = dp(27);
+    var lineNum = (readTextHeight / lineHeight).floor();
+    lineHeight = (readTextHeight / lineNum).floorToDouble();
     textStyle = new TextStyle(
       height: 1.2,
       fontSize: dp(17),
@@ -108,6 +107,8 @@ class _ReadPagerState extends State<ReadPager> {
         pageController.jumpToPage(currentPageIndexOffset.round());
         return;
       }
+
+      widget.optionLayerKey.currentState.hide();
     });
 
     this.currentPageIndex = widget.bookInfo['currentPageIndex'];
@@ -139,12 +140,6 @@ class _ReadPagerState extends State<ReadPager> {
   }
 
   initReadState() async {
-//    this.initPageIndex = widget.bookInfo['currentPageIndex'];
-//    this.initPageIndex = 1;
-//    print("init initPageIndex   $initPageIndex");
-//    loadingMap[currentChapterIndex] = true;
-//    loadingMap[currentChapterIndex + 1] = true;
-//    loadingMap[currentChapterIndex - 1] = true;
     await Future.delayed(Duration(milliseconds: 350));
     StatusBar.hide();
 
@@ -158,23 +153,19 @@ class _ReadPagerState extends State<ReadPager> {
     this.loadChapterText(currentChapterIndex);
     this.loadChapterText(currentChapterIndex + 1);
     this.loadChapterText(currentChapterIndex - 1);
-//    setState(() {});
   }
 
   Future loadChapterText(chapterIndex, [bool reLayout = true]) async {
     print('loadChapterText');
-//    setState(() {
-//      this.content = 'loading';
-//    });
+
     var chapterList = widget.bookInfo['chapterList'];
     if (chapterIndex < 0 || chapterIndex > chapterList.length - 1) {
       loadingMap.remove(chapterIndex); //不在章节索引中，移除加载状态
 //      setState(() {});
-      print("${chapterIndex} 越界");
+//      print("$chapterIndex 越界");
       return;
     }
-    print("${chapterIndex} bu越界");
-//    print("save loading state  ${chapterIndex}");
+//    print("${chapterIndex} bu越界");
     loadingMap[chapterIndex] = true;
     var url = chapterList[chapterIndex]['url'];
     if (chapterTextMap[url] != null) {
@@ -213,7 +204,6 @@ class _ReadPagerState extends State<ReadPager> {
           loadingMap.remove(chapterIndex); //并发以完成，移除加载状态
           return;
         }
-        //todo 开发环境暂时不存
         await txn.insert('chapter', {
           "id": url,
           "text": content,
@@ -223,14 +213,11 @@ class _ReadPagerState extends State<ReadPager> {
     chapterTextMap[url] = content;
 
     calcPagerData(url);
-//    this.pageEndIndexList = pageEndIndexList;
     loadingMap.remove(chapterIndex); //加载完成，移除加载状态
 
-//    if (chapterIndex == currentChapterIndex) {
     if (reLayout && this.mounted) {
       setState(() {});
     }
-//    }
   }
 
   calcPagerData(url) {
@@ -244,10 +231,10 @@ class _ReadPagerState extends State<ReadPager> {
 //    var pageEndIndexList = parseChapterPager(chapterTextMap[url]);
     var pageEndIndexList = ChapterTextPainter.calcPagerData(
       chapterTextMap[url],
-      ReadTextWidth,
-      ReadTextHeight,
+      readTextWidth,
+      readTextHeight,
       textStyle,
-      LineHeight,
+      lineHeight,
     );
     chapterPagerDataMap[url] = pageEndIndexList;
 //    print(pageEndIndexList);
@@ -255,24 +242,23 @@ class _ReadPagerState extends State<ReadPager> {
     return pageEndIndexList;
   }
 
+  var preScrollNotify;
+
   bool onPageScrollNotify(Notification notification) {
 //    print(notification.runtimeType);
-    if (notification is ScrollEndNotification) {
-//      setState(() {
-//      var initScrollIndex = pageController.page.round();
-//      print(initScrollIndex);
-//      });
-//      print("xxx");
+    if (notification is UserScrollNotification &&
+        preScrollNotify is ScrollEndNotification) {
+      //滚动自动停止
 
       var index = pageController.page.round();
-//      var currentPageIndex = index - initScrollIndex + initPageIndex;
       initScrollIndex = index;
-//      initPageIndex = currentPageIndex;
+
       this.saveReadState();
 
       this.loadChapterText(currentChapterIndex + 1);
       this.loadChapterText(currentChapterIndex - 1);
     }
+    preScrollNotify = notification;
     return false;
   }
 
@@ -287,64 +273,78 @@ class _ReadPagerState extends State<ReadPager> {
       where: "id=?",
       whereArgs: [widget.bookInfo['id']],
     );
-//    print("asdfsadfasdfasdf ${widget.bookInfo['id']}  ${currentPageIndex}");
   }
 
   @override
   Widget build(BuildContext context) {
     print("build  hole  page !!!!! ${Platform.operatingSystem}");
-    return NotificationListener(
-      child: new PageView.builder(
-        onPageChanged: (index) {
-          print('onPageChanged');
-//          currentPageIndex
-//        currentChapterIndex
-          var pageChange = index - initScrollIndex;
-          var newPageIndex = currentPageIndex + pageChange;
-          print("pagechange $pageChange");
-          if (pageChange > 0) {
+    var pageView = new PageView.builder(
+      onPageChanged: (index) {
+        print('onPageChanged');
+        var pageChange = index - initScrollIndex;
+        var newPageIndex = currentPageIndex + pageChange;
+        print("pagechange $pageChange");
+        if (pageChange > 0) {
+          List chapterList = widget.bookInfo['chapterList'];
+          var url = chapterList[currentChapterIndex]['url'];
+          var chapterPagerList = chapterPagerDataMap[url];
+          if (chapterPagerList == null ||
+              newPageIndex > chapterPagerList.length - 1) {
+            currentPageIndex = 0;
+            currentChapterIndex++;
+          } else {
+            currentPageIndex = newPageIndex;
+          }
+        } else {
+          if (newPageIndex < 0) {
             List chapterList = widget.bookInfo['chapterList'];
-            var url = chapterList[currentChapterIndex]['url'];
+            var url = chapterList[currentChapterIndex - 1]['url'];
             var chapterPagerList = chapterPagerDataMap[url];
-            if (chapterPagerList == null ||
-                newPageIndex > chapterPagerList.length - 1) {
+            currentChapterIndex--;
+            if (chapterPagerList == null || chapterPagerList.length == 0) {
               currentPageIndex = 0;
-              currentChapterIndex++;
             } else {
-              currentPageIndex = newPageIndex;
+              currentPageIndex = chapterPagerList.length - 1;
             }
           } else {
-            if (newPageIndex < 0) {
-              List chapterList = widget.bookInfo['chapterList'];
-              var url = chapterList[currentChapterIndex - 1]['url'];
-              var chapterPagerList = chapterPagerDataMap[url];
-              currentChapterIndex--;
-              if (chapterPagerList == null || chapterPagerList.length == 0) {
-                currentPageIndex = 0;
-              } else {
-                currentPageIndex = chapterPagerList.length - 1;
-              }
-            } else {
-              currentPageIndex = newPageIndex;
-            }
+            currentPageIndex = newPageIndex;
           }
-          print("页码 $currentPageIndex,  章节 $currentChapterIndex");
-          initScrollIndex = index;
-//        print(index);
-//        pageController.jumpTo(pageController.offset - 1);
-        },
-        controller: pageController,
-        itemBuilder: (BuildContext context, int index) {
-          return buildPage(index);
-        },
-//      itemCount: 3,
-        itemCount: maxInt,
-        physics: ClampingScrollPhysics(),
+        }
+        print("页码 $currentPageIndex,  章节 $currentChapterIndex");
+        initScrollIndex = index;
+      },
+      controller: pageController,
+      itemBuilder: (BuildContext context, int index) {
+        return buildPage(index);
+      },
+      itemCount: maxInt,
+      physics: ClampingScrollPhysics(),
 //      physics: PagerScrollPhysics(),
+    );
+    return NotificationListener(
+      child: Listener(
+        child: pageView,
+        onPointerDown: (point) {
+          downPoint = point;
+        },
+        onPointerUp: (point) {
+          if (downPoint == null) return;
+          if (pageController.page.round() != pageController.page) return;
+          widget.optionLayerKey.currentState.toggle();
+          if (downPoint.position.dx == point.position.dx) {
+            //点击释放
+            // 判断点击位置，弹出option或翻页
+          } else {
+            //拖动释放
+          }
+        },
+//        onTap: (){},
       ),
       onNotification: onPageScrollNotify,
     );
   }
+
+  PointerDownEvent downPoint;
 
   String loadPageText(url, int pageIndex) {
     var pageEndIndexList = chapterPagerDataMap[url];
@@ -381,10 +381,8 @@ class _ReadPagerState extends State<ReadPager> {
 //    print("loadingggggggggggggggg   $loading $chapterIndex");
     if (loading == null) {
       print("load A");
-//    var chapterText = chapterTextCacheMap[pageIndex];
 //      print("aaaaaaaaaaa , $chapterIndex, ${chapterList.length}");
 
-//      var chapterText = chapterTextMap[url] ?? '';
       var pageCount = calcPagerData(url).length;
 
 //      print(
@@ -392,7 +390,7 @@ class _ReadPagerState extends State<ReadPager> {
 
       if (pageIndex > pageCount - 1) {
         print("load AA");
-        print("${chapterIndex}  ${chapterList.length}");
+//        print("${chapterIndex}  ${chapterList.length}");
         if (chapterIndex + 1 > chapterList.length - 1) {
           print("load AAA");
           finishPage = true;
@@ -406,8 +404,6 @@ class _ReadPagerState extends State<ReadPager> {
           //翻页超过本章最后一页，加载下一章，并计算页数
           print("NNNNN $pageIndex  , $pageCount ");
           url = chapterList[chapterIndex]['url'];
-//      title = chapterList[currentChapterIndex + 1]['title'];
-//        chapterText = chapterTextMap[url] ?? '';
           var parseChapterPagerList = calcPagerData(url);
           pageCount = parseChapterPagerList.length;
           print(parseChapterPagerList);
@@ -425,8 +421,6 @@ class _ReadPagerState extends State<ReadPager> {
           print("PPPPPPPPPPP  ${chapterIndex - 1}");
           chapterIndex--;
           url = chapterList[chapterIndex]['url'];
-//      title = chapterList[currentChapterIndex - 1]['title'];
-//        chapterText = chapterTextMap[url] ?? '';
           pageCount = calcPagerData(url).length;
           pageIndex += pageCount;
         }
@@ -487,7 +481,7 @@ class _ReadPagerState extends State<ReadPager> {
       pageLabel = '';
       title = '';
     } else if (finishPage || chapterIndex > chapterList.length - 1) {
-      print("${chapterIndex}, 没有最新章节");
+//      print("${chapterIndex}, 没有最新章节");
       text = '没有最新章节';
       pageLabel = '';
       title = '';
@@ -531,24 +525,19 @@ class _ReadPagerState extends State<ReadPager> {
       }
     }
 
-    return GestureDetector(
-      onTap: () {
-        widget.optionLayerKey.currentState.toggle();
-      },
-      child: ReadPagerItem(
-        text: contentWidget,
-        title: title,
-        pageLabel: pageLabel,
-      ),
+    return ReadPagerItem(
+      text: contentWidget,
+      title: title,
+      pageLabel: pageLabel,
     );
   }
 
   TextCanvas buildTextCanvas(String text) {
     return new TextCanvas(
       text: text,
-      width: ReadTextWidth,
-      height: ReadTextHeight,
-      lineHeight: LineHeight,
+      width: readTextWidth,
+      height: readTextHeight,
+      lineHeight: lineHeight,
     );
   }
 }

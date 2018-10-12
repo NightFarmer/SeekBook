@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
@@ -63,7 +65,7 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
       color: Colors.black,
       child: SafeArea(
         child: Container(
-          width: ScreenAdaptation.screenWidth,
+          width: vw(100),
           color: Colors.lightGreen,
           child: GestureDetector(
             onTap: () {

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -50,10 +51,11 @@ dpx(value) {
 
 /// 屏宽百分比
 vw(value) {
-  return ScreenAdaptation.screenWidth * value / 100;
+  return window.physicalSize.width / window.devicePixelRatio * value / 100;
 }
 
 /// 屏高百分比
 vh(value) {
-  return ScreenAdaptation.screenHeight * value / 100;
+//  return ScreenAdaptation.screenHeight * value / 100;
+  return window.physicalSize.height / window.devicePixelRatio * value / 100;
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:seek_book/pages/main_page.dart';
 import 'package:seek_book/utils/battery.dart';
@@ -60,6 +61,18 @@ class MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
 //    ScreenAdaptation.designSize = 414.0;
 //    ScreenAdaptation.init(context);
+
+
+//    SystemChrome.setPreferredOrientations([
+//      DeviceOrientation.landscapeRight,
+//      DeviceOrientation.landscapeLeft,
+//    ]);
+//    SystemChrome.setPreferredOrientations([
+//      DeviceOrientation.portraitDown,
+//      DeviceOrientation.portraitUp,
+//    ]);
+//    print("1111111111111111111111111");
+
     return new MaterialApp(
       title: '书探',
       theme: new ThemeData(

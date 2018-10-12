@@ -166,10 +166,6 @@ class _ReadPagerState extends State<ReadPager> {
       return;
     }
 //    print("${chapterIndex} bu越界");
-    /// 若已经处于加载状态，忽略重复加载请求
-    if (loadingMap[chapterIndex]) {
-      return;
-    }
     loadingMap[chapterIndex] = true;
     var url = chapterList[chapterIndex]['url'];
     if (chapterTextMap[url] != null) {
@@ -259,8 +255,13 @@ class _ReadPagerState extends State<ReadPager> {
 
       this.saveReadState();
 
-      this.loadChapterText(currentChapterIndex + 1);
-      this.loadChapterText(currentChapterIndex - 1);
+      /// 若已经处于加载状态，忽略重复加载请求
+      if (loadingMap[currentChapterIndex + 1] != true) {
+        this.loadChapterText(currentChapterIndex + 1);
+      }
+      if (loadingMap[currentChapterIndex - 1] != true) {
+        this.loadChapterText(currentChapterIndex - 1);
+      }
     }
     preScrollNotify = notification;
     return false;
@@ -281,6 +282,23 @@ class _ReadPagerState extends State<ReadPager> {
 
   @override
   Widget build(BuildContext context) {
+    var newReadTextWidth = vw(100) - dp(32);
+    if (readTextWidth != newReadTextWidth) {
+      chapterPagerDataMap = Map(); //调整字体后需要清空,url为key
+    }
+    readTextWidth = newReadTextWidth;
+    readTextHeight = vh(100) - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
+    lineHeight = dp(27);
+    var lineNum = (readTextHeight / lineHeight).floor();
+    lineHeight = (readTextHeight / lineNum).floorToDouble();
+    textStyle = new TextStyle(
+      height: 1.2,
+      fontSize: dp(17),
+      letterSpacing: dp(1),
+      color: Color(0xff383635),
+//        fontFamily: 'ReadFont',
+    );
+
     print("build  hole  page !!!!! ${Platform.operatingSystem}");
     var pageView = new PageView.builder(
       onPageChanged: (index) {
@@ -331,6 +349,9 @@ class _ReadPagerState extends State<ReadPager> {
         onPointerDown: (point) {
           downPoint = point;
         },
+        onPointerMove: (point) {
+          downPoint = point;
+        },
         onPointerUp: (point) {
           if (downPoint == null) return;
           if (pageController.page.round() != pageController.page) return;
@@ -348,7 +369,7 @@ class _ReadPagerState extends State<ReadPager> {
     );
   }
 
-  PointerDownEvent downPoint;
+  PointerEvent downPoint;
 
   String loadPageText(url, int pageIndex) {
     var pageEndIndexList = chapterPagerDataMap[url];
@@ -370,7 +391,9 @@ class _ReadPagerState extends State<ReadPager> {
     var chapterIndex = currentChapterIndex;
     List chapterList = widget.bookInfo['chapterList'];
 
-    print("build page ===》 $chapterIndex   index => $index/$initScrollIndex");
+//    print("++++++++++++ ${chapterIndex}");
+
+//    print("build page ===》 $chapterIndex   index => $index/$initScrollIndex");
 
     var url;
     var title;
@@ -381,7 +404,7 @@ class _ReadPagerState extends State<ReadPager> {
     }
 
     var loading = loadingMap[chapterIndex];
-    print("加载状态 $chapterIndex  $loading  最多章节数量${chapterList.length}");
+//    print("加载状态 $chapterIndex  $loading  最多章节数量${chapterList.length}");
 //    print("loadingggggggggggggggg   $loading $chapterIndex");
     if (loading == null) {
       print("load A");
@@ -390,7 +413,7 @@ class _ReadPagerState extends State<ReadPager> {
       var pageCount = calcPagerData(url).length;
 
 //      print(
-//          '加载页 $pageIndex,  章节$currentChapterIndex, $title, ${chapterText.length}, $pageCount');
+//          '加载页 $pageIndex,  章节$currentChapterIndex, $title, , $pageCount');
 
       if (pageIndex > pageCount - 1) {
         print("load AA");
@@ -508,7 +531,7 @@ class _ReadPagerState extends State<ReadPager> {
       var chapter = chapterList[chapterIndex];
       url = chapter['url'];
       title = chapter['title'];
-      print(title);
+//      print(title);
       var pageEndIndexList = chapterPagerDataMap[url];
 //      print('bbbbbbb ${chapterIndex}  ${url}');
       if (pageEndIndexList != null && pageEndIndexList.length > 0) {
@@ -528,6 +551,7 @@ class _ReadPagerState extends State<ReadPager> {
         );
       }
     }
+//    print("++++++++++++ ${chapterIndex}");
 
     return ReadPagerItem(
       text: contentWidget,

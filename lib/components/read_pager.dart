@@ -344,6 +344,11 @@ class _ReadPagerState extends State<ReadPager> {
           if (downPoint == null) return;
           if (pageController.page.round() != pageController.page) return;
           if (downPoint.dx == point.position.dx) {
+            //点击到重试按钮，忽略此次点击。
+            if (reloadButtonClick) {
+              reloadButtonClick = false;
+              return;
+            }
             //点击释放
             // 判断点击位置，弹出option或翻页
             widget.optionLayerKey.currentState.toggle();
@@ -542,7 +547,7 @@ class _ReadPagerState extends State<ReadPager> {
       text = '加载失败';
       pageLabel = '';
       title = title ?? '';
-      contentWidget = buildTextCanvas(text);
+      contentWidget = buildFailView();
     } else {
       var chapter = chapterList[chapterIndex];
       var url = chapter['url'];
@@ -582,6 +587,46 @@ class _ReadPagerState extends State<ReadPager> {
       width: readTextWidth,
       height: readTextHeight,
       lineHeight: lineHeight,
+    );
+  }
+
+  var reloadButtonClick = false;
+  var reloadButtonDown = false;
+
+  Widget buildFailView() {
+    return new Container(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text('加载失败'),
+            Listener(
+              child: RaisedButton(
+                child: Text("重试"),
+                onPressed: () {},
+              ),
+              onPointerUp: (event) {
+                reloadButtonClick = true;
+                if (reloadButtonDown) {
+                  print("reload 6666666");
+                  setState(() {
+                    loadChapterText(currentChapterIndex);
+                  });
+                }
+              },
+              onPointerDown: (e) {
+                reloadButtonDown = true;
+              },
+              onPointerMove: (e) {
+                reloadButtonDown = false;
+              },
+              onPointerCancel: (e) {
+                reloadButtonDown = false;
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

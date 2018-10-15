@@ -125,7 +125,7 @@ class _BookDetailState extends State<BookDetailPage> {
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
 
-    var bookInfo = BookSiteKenWen().bookDetail(name, author, url, (exist) {
+    var bookInfo = await BookSiteKenWen().bookDetail(name, author, url, (exist) {
       if (exist.length > 0) {
         setState(() {
           bookActive = exist[0]['active'] ?? 0;
@@ -138,7 +138,7 @@ class _BookDetailState extends State<BookDetailPage> {
     if (!mounted) return;
     setState(() {
       this.imgUrl = bookInfo['imgUrl'];
-      this.updateTime = bookInfo['imgUrl'];
+      this.updateTime = bookInfo['updateTime'];
       this.chapterList = json.decode(bookInfo['chapters']);
       this.bookInfo = bookInfo;
     });

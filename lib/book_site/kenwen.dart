@@ -35,7 +35,7 @@ class BookSiteKenWen extends BookSite {
 
   @override
   List<Map> parseChapterList(Document document, String bookUrl) {
-    List chapterList = [];
+    List<Map> chapterList = [];
     var groupIndex = 0;
     document.querySelector('#list dl').children.forEach((row) {
       var chapterRow = row.querySelector('a');
@@ -78,5 +78,34 @@ class BookSiteKenWen extends BookSite {
     );
 //    print(dateTime);
     return dateTime.millisecondsSinceEpoch;
+  }
+
+  @override
+  Future<String> parseChapter(String chapterUrl) async {
+    String content = '';
+    //      await Future.delayed(Duration(milliseconds: 5000));
+    Dio dio = new Dio();
+//    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
+    Response response = await dio.get(chapterUrl);
+    var document = parse(response.data);
+    content = document.querySelector('#content').innerHtml;
+    content = content
+        .replaceAll('<script>chaptererror();</script>', '')
+        .split("<br>")
+        .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
+        .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
+        .join('\n');
+    await Globals.database.transaction((txn) async {
+      List<Map> existData = await txn
+          .rawQuery('select text from chapter where id = ?', [chapterUrl]);
+      if (existData.length > 0) {
+        return existData[0]['text'];
+      }
+      await txn.insert('chapter', {
+        "id": chapterUrl,
+        "text": content,
+      });
+    });
+    return content;
   }
 }

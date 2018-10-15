@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
+import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/components/read_option_layer.dart';
 import 'package:seek_book/components/read_pager_item.dart';
 import 'package:seek_book/components/text_canvas.dart';
@@ -185,30 +186,17 @@ class _ReadPagerState extends State<ReadPager> {
     if (existData.length > 0) {
       content = existData[0]['text'];
     } else {
-      await Future.delayed(Duration(milliseconds: 5000));
-      Dio dio = new Dio();
-//    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
-      Response response = await dio.get(url);
-      var document = parse(response.data);
-      content = document.querySelector('#content').innerHtml;
-      content = content
-          .replaceAll('<script>chaptererror();</script>', '')
-          .split("<br>")
-          .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
-          .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
-          .join('\n');
-      await database.transaction((txn) async {
-        List<Map> existData =
-            await txn.rawQuery('select text from chapter where id = ?', [url]);
-        if (existData.length > 0) {
-          loadingMap.remove(chapterIndex); //并发以完成，移除加载状态
-          return;
+      try {
+        content = await BookSiteKenWen().parseChapter(url);
+        loadingMap.remove(chapterIndex); //并发以完成，移除加载状态
+      } catch (e) {
+        print(e);
+        loadingMap[chapterIndex] = false;
+        if (reLayout && this.mounted) {
+          setState(() {});
         }
-        await txn.insert('chapter', {
-          "id": url,
-          "text": content,
-        });
-      });
+        return;
+      }
     }
     chapterTextMap[url] = content;
 
@@ -430,10 +418,15 @@ class _ReadPagerState extends State<ReadPager> {
           pageIndex -= pageCount;
           //翻页超过本章最后一页，加载下一章，并计算页数
           print("NNNNN $pageIndex  , $pageCount ");
-          url = chapterList[chapterIndex]['url'];
+          var url = chapterList[chapterIndex]['url'];
           var parseChapterPagerList = calcPagerData(url);
           pageCount = parseChapterPagerList.length;
           print(parseChapterPagerList);
+          // 这一页是否已加载失败
+          var preLoading = loadingMap[chapterIndex];
+          if (preLoading == false) {
+            loading = preLoading;
+          }
         }
       }
       if (pageIndex < 0) {
@@ -444,12 +437,17 @@ class _ReadPagerState extends State<ReadPager> {
 //          break;
           //越界停止
         } else {
-          print("load BAB");
+          print("load ABB");
           print("PPPPPPPPPPP  ${chapterIndex - 1}");
           chapterIndex--;
-          url = chapterList[chapterIndex]['url'];
+          var url = chapterList[chapterIndex]['url'];
           pageCount = calcPagerData(url).length;
           pageIndex += pageCount;
+          // 这一页是否已加载失败
+          var preLoading = loadingMap[chapterIndex];
+          if (preLoading == false) {
+            loading = preLoading;
+          }
         }
       }
     } else {
@@ -466,7 +464,13 @@ class _ReadPagerState extends State<ReadPager> {
           print("load BAB");
           chapterIndex++;
           pageIndex = 0;
-          title = chapterList[chapterIndex]['title'];
+          var chapter = chapterList[chapterIndex];
+          title = chapter['title'];
+          // 这一页是否已完成加载，若已完成加载，则直接读取
+          var preLoading = loadingMap[chapterIndex];
+          if (preLoading == null) {
+            loading = preLoading;
+          }
         }
       }
       if (pageIndex < 0) {
@@ -479,7 +483,18 @@ class _ReadPagerState extends State<ReadPager> {
           print("load BBB");
           chapterIndex--;
           pageIndex = 0;
-          title = chapterList[chapterIndex]['title'];
+          var chapter = chapterList[chapterIndex];
+          title = chapter['title'];
+          // 这一页是否已完成加载，若已完成加载，则直接读取
+          var preLoading = loadingMap[chapterIndex];
+          if (preLoading == null) {
+            loading = preLoading;
+            var url = chapter['url'];
+            var pageCount = calcPagerData(url).length;
+            if (pageCount > 0) {
+              pageIndex = pageCount - 1;
+            }
+          }
 
 //          //如果是从完结提示页向左滑，则加载上一章最后一页
 //          print('$currentChapterIndex,  ${chapterList.length}');
@@ -523,13 +538,14 @@ class _ReadPagerState extends State<ReadPager> {
         ),
       );
     } else if (loading == false) {
+      print("失败!!!");
       text = '加载失败';
       pageLabel = '';
       title = title ?? '';
       contentWidget = buildTextCanvas(text);
     } else {
       var chapter = chapterList[chapterIndex];
-      url = chapter['url'];
+      var url = chapter['url'];
       title = chapter['title'];
 //      print(title);
       var pageEndIndexList = chapterPagerDataMap[url];
@@ -540,7 +556,7 @@ class _ReadPagerState extends State<ReadPager> {
         contentWidget = buildTextCanvas(text);
       } else {
         //最初始化的加载，没有在加载状态中
-        title = chapterList[currentChapterIndex]['title'];
+        title = chapterList[chapterIndex]['title'];
 //        title = '123123-----$currentPageIndex';
         text = "加载中2";
 //        contentWidget = buildTextCanvas(text);

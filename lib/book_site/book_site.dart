@@ -6,6 +6,7 @@ import 'package:html/parser.dart';
 import 'package:seek_book/globals.dart' as Globals;
 
 abstract class BookSite {
+
   bookDetail(name, author, url, onFindExist) async {
 //    var name = this.bookInfo['name'];
 //    var author = this.bookInfo['author'];
@@ -99,6 +100,9 @@ abstract class BookSite {
     });
     return bookInfo;
   }
+  searchBook(String text);
+
+  Future<String> parseChapter(String chapterUrl);
 
   List<Map> parseChapterList(Document document, String bookUrl);
 

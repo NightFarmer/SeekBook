@@ -9,6 +9,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/material.dart';
 import 'package:seek_book/globals.dart' as Globals;
 import 'package:seek_book/utils/screen_adaptation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MyBookList extends StatefulWidget {
   MyBookList({Key key}) : super(key: key);
@@ -140,6 +141,7 @@ class MyBookListState extends State<MyBookList> {
     var latestChapter =
         item['chapterList'][item['chapterList'].length - 1]['title'];
     var bookInfoRow = <Widget>[
+      buildBookImg(item),
       Text("${item['name'].trim()}"),
       Expanded(
         child: Text("${latestChapter}"),
@@ -178,6 +180,30 @@ class MyBookListState extends State<MyBookList> {
         ),
       ),
     );
+  }
+
+  Widget buildBookImg(item) {
+    String imgUrl = item['imgUrl'];
+    if (imgUrl.isEmpty) {
+      return Container(
+        width: dp(100),
+        height: dp(100 / 144 * 192),
+      );
+    } else {
+      return new CachedNetworkImage(
+        imageUrl: imgUrl,
+        placeholder: new CircularProgressIndicator(),
+        errorWidget: new Icon(Icons.error),
+        width: dp(100),
+        height: dp(100 / 144 * 192),
+        fit: BoxFit.cover,
+      );
+//      return Image.network(
+//        imgUrl,
+//        width: dp(100),
+//        height: dp(100),
+//      );
+    }
   }
 
   Future<Null> loadData() async {

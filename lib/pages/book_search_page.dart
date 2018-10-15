@@ -86,9 +86,11 @@ class _BookSearchPageState extends State<BookSearchPage> {
   }
 
   void searchBook() async {
-    var resultList = await BookSiteKenWen().searchBook(_controller.text);
-    setState(() {
-      this.resultList = resultList;
-    });
+    if (_controller.text.isNotEmpty) {
+      var resultList = await BookSiteKenWen().searchBook(_controller.text);
+      setState(() {
+        this.resultList = resultList;
+      });
+    }
   }
 }

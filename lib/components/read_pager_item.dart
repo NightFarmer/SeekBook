@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:seek_book/components/battery_icon.dart';
 import 'package:seek_book/utils/battery.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
+import 'package:seek_book/globals.dart' as Globals;
 
 class ReadPagerItem extends StatefulWidget {
   final text;
@@ -47,12 +48,19 @@ class _ReadPagerItemState extends State<ReadPagerItem> {
 
   @override
   Widget build(BuildContext context) {
-    var smallTextColor = Color(0xff807C7A);
+    //标题及电量页面文字颜色
+    var smallTextColor =
+        Globals.readTheme == 'normal' ? Color(0xff807C7A) : Color(0xFFffffff);
     var smallTextStyle = TextStyle(color: smallTextColor, fontSize: dp(13));
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: dp(16)),
-      decoration: BoxDecoration(color: Color(0xffEAE5E0)),
+      decoration: BoxDecoration(
+        //阅读背景色
+        color: Globals.readTheme == 'normal'
+            ? Color(0xffEAE5E0)
+            : Color(0xff000000),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[

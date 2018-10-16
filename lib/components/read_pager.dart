@@ -355,7 +355,7 @@ class ReadPagerState extends State<ReadPager> {
             }
             //点击释放
             // 判断点击位置，弹出option或翻页
-            widget.optionLayerKey.currentState.toggle();
+            widget.optionLayerKey.currentState.toggleShow();
           } else {
             //拖动释放
           }
@@ -591,6 +591,9 @@ class ReadPagerState extends State<ReadPager> {
       width: readTextWidth,
       height: readTextHeight,
       lineHeight: lineHeight,
+      // 阅读文字颜色
+      color:
+          Globals.readTheme == 'normal' ? Color(0xff383635) : Color(0xffFFFFFF),
     );
   }
 

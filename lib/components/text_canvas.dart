@@ -45,7 +45,15 @@ class ChapterTextPainter extends CustomPainter {
   final double height;
   final double lineHeight;
 
-  ChapterTextPainter({this.text, this.width, this.height, this.lineHeight});
+  final Color color;
+
+  ChapterTextPainter({
+    this.text,
+    this.width,
+    this.height,
+    this.lineHeight,
+    this.color,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -65,7 +73,7 @@ class ChapterTextPainter extends CustomPainter {
       height: 1.2,
       fontSize: dp(17),
       letterSpacing: dp(1),
-      color: Color(0xff383635),
+      color: color,
 //        fontFamily: 'ReadFont',
     );
     var allChart = text.split('');
@@ -121,7 +129,7 @@ class ChapterTextPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     if (oldDelegate is ChapterTextPainter) {
-      return oldDelegate.text != text;
+      return oldDelegate.text != text || oldDelegate.color.value != color.value;
     }
     return false;
   }
@@ -132,9 +140,16 @@ class TextCanvas extends StatelessWidget {
   final double width;
   final double height;
   final double lineHeight;
+  final Color color;
 
-  TextCanvas({Key key, this.text, this.width, this.height, this.lineHeight})
-      : super(key: key);
+  TextCanvas({
+    Key key,
+    this.text,
+    this.width,
+    this.height,
+    this.lineHeight,
+    this.color,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +159,7 @@ class TextCanvas extends StatelessWidget {
         width: width,
         height: height,
         lineHeight: lineHeight,
+        color: color,
       ),
     );
   }

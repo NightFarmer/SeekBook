@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:seek_book/pages/main_page.dart';
 import 'package:seek_book/utils/battery.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'pages/read_page.dart';
@@ -55,6 +56,11 @@ class MyAppState extends State<MyApp> {
 //    List<Map> list = await database.rawQuery('SELECT * FROM Book');
 //    print(list);
     Globals.database = database;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var readTheme = prefs.getString('readTheme');
+    if (readTheme != null) {
+      Globals.readTheme = readTheme;
+    }
   }
 
   @override

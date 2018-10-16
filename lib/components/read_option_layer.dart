@@ -7,6 +7,7 @@ import 'package:seek_book/components/read_pager.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/utils/status_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:seek_book/globals.dart' as Globals;
 
 /// 阅读页选项弹出层
 class ReadOptionLayer extends StatefulWidget {
@@ -86,12 +87,33 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
     StatusBar.hide();
   }
 
-  void toggle() {
+  void toggleShow() {
     if (layerShow) {
       hide();
     } else {
       show();
     }
+  }
+
+  toggleOrientation() async {
+    var orientation = Globals.orientation;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (orientation == 'landscape') {
+      prefs.setString('orientation', 'portrait');
+      Globals.orientation = 'portrait';
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else if (orientation == 'portrait') {
+      prefs.setString('orientation', 'landscape');
+      Globals.orientation = 'landscape';
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    }
+    setState(() {});
   }
 
   @override
@@ -188,12 +210,16 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
       child: Row(
         children: <Widget>[
           _BottomButton(
-            label: '夜间',
-            imageAssets: 'assets/images/ic_menu_mode_night_normal.png',
+            label: Globals.readTheme == 'normal' ? '夜间' : '正常',
+            imageAssets: Globals.readTheme == 'normal'
+                ? 'assets/images/ic_menu_mode_night_normal.png'
+                : 'assets/images/ic_menu_mode_normal_normal.png',
+            onClick: toggleTheme,
           ),
           _BottomButton(
-            label: '横屏',
+            label: Globals.orientation == 'portrait' ? '横屏' : '竖屏',
             imageAssets: 'assets/images/ic_menu_orientation_normal.png',
+            onClick: toggleOrientation,
           ),
           _BottomButton(
             label: '设置',
@@ -222,6 +248,18 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
     );
   }
 
+  toggleTheme() async {
+    if (Globals.readTheme == 'normal') {
+      Globals.readTheme = 'dark';
+    } else {
+      Globals.readTheme = 'normal';
+    }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('readTheme', Globals.readTheme);
+    widget.readPagerKey.currentState.setState(() {});
+    setState(() {});
+  }
+
   showTocListDialog() {
 //    var color = Color(0xFFffffff).withOpacity(0.4);
 //    print('Color(0xFFffffff).withOpacity(0.4) 输出 $color');
@@ -230,8 +268,12 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
     showDialog<String>(
       context: context,
       builder: (BuildContext context) => _SimpleDialog(
+            titlePadding: EdgeInsets.symmetric(
+              horizontal: dp(24),
+              vertical: dp(20),
+            ),
             title: Container(
-              padding: EdgeInsets.only(bottom: dp(20)),
+//              padding: EdgeInsets.only(bottom: dp(20)),
               child: Text(
                 bookInfo['name'],
                 style: TextStyle(fontSize: dp(17), color: theme.primaryColor),
@@ -242,7 +284,7 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
                 border: Border(top: BorderSide(color: Colors.grey)),
 //                color: Colors.red,
               ),
-              height: vh(75),
+              height: vh(100) - dp(160),
               width: vw(80),
               child: ListView.builder(
                 itemBuilder: (context, index) {

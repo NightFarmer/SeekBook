@@ -97,7 +97,11 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
   @override
   Widget build(BuildContext context) {
     List chapterList = bookInfo['chapterList'];
-    var chapterUrl = chapterList[bookInfo['currentChapterIndex']]['url'];
+    var currentChapterIndex = bookInfo['currentChapterIndex'];
+    var chapterUrl;
+    if (currentChapterIndex < chapterList.length) {
+      chapterUrl = chapterList[currentChapterIndex]['url'];
+    }
     var topLayer = Container(
 //      height: 100.0,
       color: Colors.black,
@@ -139,45 +143,43 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
                   ),
                 ],
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: dp(11.5),
-                  horizontal: dp(20),
-                ),
-                color: Color(0xff2A2929),
-                child: GestureDetector(
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Text(
-                          chapterUrl + "xxxxxxx",
-                          style: TextStyle(
-                            color: Color(0xffFFFFFF).withOpacity(0.2),
-                            fontSize: dp(12),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+              chapterUrl == null
+                  ? Container()
+                  : Container(
+                      padding: EdgeInsets.symmetric(
+                        vertical: dp(11.5),
+                        horizontal: dp(20),
+                      ),
+                      color: Color(0xff2A2929),
+                      child: GestureDetector(
+                        child: Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                chapterUrl,
+                                style: TextStyle(
+                                  color: Color(0xffFFFFFF).withOpacity(0.2),
+                                  fontSize: dp(12),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              '显示原网页',
+                              style: TextStyle(
+                                color: Color(0xffFFFFFF).withOpacity(0.2),
+                                fontSize: dp(12),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        '显示原网页',
-                        style: TextStyle(
-                          color: Color(0xffFFFFFF).withOpacity(0.2),
-                          fontSize: dp(12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+                    )
             ],
           ),
         ),
       ),
-    );
-    var bottomLabelStyle = TextStyle(
-      color: Color(0xffFFFFFF).withOpacity(0.6),
-      fontSize: dp(13),
     );
     var bottomLayer = Container(
       padding: EdgeInsets.symmetric(vertical: dp(10)),

@@ -25,6 +25,8 @@ class MyBookListState extends State<MyBookList> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
+  Map loadingMap = Map();
+
   List bookList = [];
 
   @override
@@ -39,13 +41,19 @@ class MyBookListState extends State<MyBookList> {
 //      completer.complete(null);
 //    });
 //    _refreshIndicatorKey.currentState.show();
+    refreshChapter();
+  }
+
+  refreshChapter() async {
     await loadData();
     Iterable requestList = bookList.map((book) {
+      loadingMap[book['id']] = true;
       return refreshBook(book);
     }).toList();
+    setState(() {});
 //    await Future.delayed(Duration(milliseconds: 3000));
     await Future.wait(requestList);
-    setState(() {});
+//    setState(() {});
   }
 
   Future<dynamic> refreshBook(book) async {
@@ -56,18 +64,20 @@ class MyBookListState extends State<MyBookList> {
       null,
     );
 //    if (bookNew['updateTime'] != book['updateTime'] || true) {
-    if (bookNew['updateTime'] != book['updateTime']) {
-//      setState(() {
+//    if (bookNew['updateTime'] != book['updateTime']) {
+    setState(() {
+      loadingMap.remove(book['id']);
       bookNew['updateTime'] = book['updateTime'];
       bookNew['hasNew'] = book['hasNew'];
       bookNew['imgUrl'] = book['imgUrl'];
       bookNew['chapters'] = book['chapters'];
-//      });
-    }
+    });
+//    }
   }
 
   @override
   Widget build(BuildContext context) {
+    print("build 书籍列表");
     return Container(
       child: RefreshIndicator(
         key: _refreshIndicatorKey,
@@ -159,9 +169,22 @@ class MyBookListState extends State<MyBookList> {
         child: Text("${latestChapter}"),
       ),
     ];
-    print("build  ----  ${item['hasNew']}, ${item['name']}");
+//    print("build  ----  ${item['hasNew']}, ${item['name']}");
 //    if (item['hasNew'] == 1 || true) {
-    if (item['hasNew'] == 1) {
+    if (loadingMap[item['id']] == true) {
+      var dotWidth = dp(10);
+      bookInfoRow.add(
+//        CupertinoActivityIndicator(
+//          radius: dp(20),
+//        ),
+        Container(
+          child: FittedBox(
+            child: CircularProgressIndicator(),
+          ),
+          width: dp(20),
+        ),
+      );
+    } else if (item['hasNew'] == 1) {
       var dotWidth = dp(10);
       bookInfoRow.add(Container(
         width: dotWidth,

@@ -13,7 +13,13 @@ class BookSiteKenWen extends BookSite {
     Dio dio = new Dio();
     var book = text ?? '逆天邪神';
     var url = 'https://sou.xanbhx.com/search?siteid=kenwencom&q=${book}';
-    Response response = await dio.get(url);
+    Response response = await dio.get(
+      url,
+      options: Options(
+        connectTimeout: 5000,
+        receiveTimeout: 5000,
+      ),
+    );
     var document = parse(response.data);
     var querySelector = document.querySelectorAll('ul li');
     var resultList = querySelector

@@ -52,8 +52,8 @@ class MyAppState extends State<MyApp> {
       },
     );
 
-    List<Map> list = await database.rawQuery('SELECT * FROM Book');
-    print(list);
+//    List<Map> list = await database.rawQuery('SELECT * FROM Book');
+//    print(list);
     Globals.database = database;
   }
 

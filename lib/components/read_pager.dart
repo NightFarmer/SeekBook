@@ -67,8 +67,11 @@ class ReadPagerState extends State<ReadPager> {
     readTextHeight =
         ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
     lineHeight = dp(27);
+    print("lineHeight $lineHeight");
     var lineNum = (readTextHeight / lineHeight).floor();
-    lineHeight = (readTextHeight / lineNum).floorToDouble();
+//    lineHeight = (readTextHeight / lineNum).floorToDouble();
+    lineHeight = (readTextHeight / lineNum);
+    print("lineHeight $lineHeight");
     textStyle = new TextStyle(
       height: 1.2,
       fontSize: dp(17),
@@ -278,7 +281,8 @@ class ReadPagerState extends State<ReadPager> {
     readTextHeight = vh(100) - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
     lineHeight = dp(27);
     var lineNum = (readTextHeight / lineHeight).floor();
-    lineHeight = (readTextHeight / lineNum).floorToDouble();
+//    lineHeight = (readTextHeight / lineNum).floorToDouble();
+    lineHeight = (readTextHeight / lineNum);
     textStyle = new TextStyle(
       height: 1.2,
       fontSize: dp(17),

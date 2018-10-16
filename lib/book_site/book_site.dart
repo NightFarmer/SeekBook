@@ -4,9 +4,11 @@ import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/globals.dart' as Globals;
+//import 'package:http/http.dart'  as http;
 
 abstract class BookSite {
   bookDetail(name, author, url, [onFindExist]) async {
+//    print("请求书籍详情  $name");
 //    var name = this.bookInfo['name'];
 //    var author = this.bookInfo['author'];
 //    var url = this.bookInfo['url'];
@@ -21,11 +23,20 @@ abstract class BookSite {
       onFindExist(exist);
     }
 
+//    print("书籍详情网络已返回0  $name  $url");
     Dio dio = new Dio();
-    Response response = await dio.get(url);
+    Response response = await dio.get(
+      url,
+      options: Options(
+        connectTimeout: 5000,
+        receiveTimeout: 5000,
+      ),
+    );
+//    print("书籍详情网络已返回1  $name");
     var document = parse(response.data);
+//    print("书籍详情网络已返回2  $name");
     var imgUrl = parseBookImage(document, url);
-    print(imgUrl);
+//    print(imgUrl);
     var currentUpdateTime = parseUpdateTime(document, url);
 
     var chapters;

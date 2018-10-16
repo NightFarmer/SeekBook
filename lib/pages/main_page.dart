@@ -52,6 +52,7 @@ class _MainPageState extends State<MainPage> {
                       ),
                     );
 //                    loadData();
+                    await Future.delayed(Duration(milliseconds: 350));
                     myBookListKey.currentState.loadData();
                   },
                   child: Text('search'),

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
+import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/status_bar.dart';
 import 'package:sqflite/sqflite.dart';
@@ -44,14 +45,25 @@ class MyBookListState extends State<MyBookList> {
     }).toList();
 //    await Future.delayed(Duration(milliseconds: 3000));
     await Future.wait(requestList);
+    setState(() {});
   }
 
   Future<dynamic> refreshBook(book) async {
-    await Future.delayed(Duration(milliseconds: 3000));
-    setState(() {
-      book['hasNew'] = 1;
-      print("${book['hasNew']}, ${book['name']}");
-    });
+    var bookNew = await BookSiteKenWen().bookDetail(
+      book['name'],
+      book['author'],
+      book['url'],
+      null,
+    );
+//    if (bookNew['updateTime'] != book['updateTime'] || true) {
+    if (bookNew['updateTime'] != book['updateTime']) {
+//      setState(() {
+      bookNew['updateTime'] = book['updateTime'];
+      bookNew['hasNew'] = book['hasNew'];
+      bookNew['imgUrl'] = book['imgUrl'];
+      bookNew['chapters'] = book['chapters'];
+//      });
+    }
   }
 
   @override
@@ -148,11 +160,16 @@ class MyBookListState extends State<MyBookList> {
       ),
     ];
     print("build  ----  ${item['hasNew']}, ${item['name']}");
+//    if (item['hasNew'] == 1 || true) {
     if (item['hasNew'] == 1) {
+      var dotWidth = dp(10);
       bookInfoRow.add(Container(
-        width: 10.0,
-        height: 10.0,
-        color: Colors.red,
+        width: dotWidth,
+        height: dotWidth,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.all(Radius.circular(dotWidth / 2)),
+        ),
       ));
     }
     return new GestureDetector(
@@ -166,6 +183,7 @@ class MyBookListState extends State<MyBookList> {
           ),
         );
         StatusBar.show();
+        await Future.delayed(Duration(milliseconds: 350));
         loadData();
       },
       onLongPress: () {
@@ -184,18 +202,27 @@ class MyBookListState extends State<MyBookList> {
 
   Widget buildBookImg(item) {
     String imgUrl = item['imgUrl'];
+    int imgWidth = 80;
     if (imgUrl.isEmpty) {
       return Container(
-        width: dp(100),
-        height: dp(100 / 144 * 192),
+        width: dp(imgWidth),
+        height: dp(imgWidth / 144 * 192),
       );
     } else {
       return new CachedNetworkImage(
         imageUrl: imgUrl,
-        placeholder: new CircularProgressIndicator(),
-        errorWidget: new Icon(Icons.error),
-        width: dp(100),
-        height: dp(100 / 144 * 192),
+//        placeholder: new CircularProgressIndicator(),
+        placeholder: Container(
+          width: dp(imgWidth),
+          height: dp(imgWidth / 144 * 192),
+        ),
+//        errorWidget: new Icon(Icons.error),
+        errorWidget: Container(
+          width: dp(imgWidth),
+          height: dp(imgWidth / 144 * 192),
+        ),
+        width: dp(imgWidth),
+        height: dp(imgWidth / 144 * 192),
         fit: BoxFit.cover,
       );
 //      return Image.network(

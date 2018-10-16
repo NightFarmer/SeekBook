@@ -91,6 +91,11 @@ class _BookSearchPageState extends State<BookSearchPage> {
       setState(() {
         this.resultList = resultList;
       });
+    } else {
+      var resultList = await BookSiteKenWen().searchBook("最强装逼");
+      setState(() {
+        this.resultList = resultList;
+      });
     }
   }
 }

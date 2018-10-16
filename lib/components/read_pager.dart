@@ -27,13 +27,13 @@ class ReadPager extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _ReadPagerState();
+    return ReadPagerState();
   }
 }
 
 int maxInt = 999999;
 
-class _ReadPagerState extends State<ReadPager> {
+class ReadPagerState extends State<ReadPager> {
 //  int maxInt = 999999999999999;
 
   var currentPageIndex = 0;
@@ -400,7 +400,7 @@ class _ReadPagerState extends State<ReadPager> {
 //    print("加载状态 $chapterIndex  $loading  最多章节数量${chapterList.length}");
 //    print("loadingggggggggggggggg   $loading $chapterIndex");
     if (loading == null) {
-      print("load A");
+      print("load A   $chapterIndex");
 //      print("aaaaaaaaaaa , $chapterIndex, ${chapterList.length}");
 
       var pageCount = calcPagerData(url).length;
@@ -552,8 +552,8 @@ class _ReadPagerState extends State<ReadPager> {
       var chapter = chapterList[chapterIndex];
       var url = chapter['url'];
       title = chapter['title'];
-//      print(title);
       var pageEndIndexList = chapterPagerDataMap[url];
+      print(title + "  $pageEndIndexList");
 //      print('bbbbbbb ${chapterIndex}  ${url}');
       if (pageEndIndexList != null && pageEndIndexList.length > 0) {
         text = loadPageText(url, pageIndex);
@@ -628,5 +628,13 @@ class _ReadPagerState extends State<ReadPager> {
         ),
       ),
     );
+  }
+
+  changeChapter(chapterIndex) {
+    setState(() {
+      currentChapterIndex = chapterIndex;
+      currentPageIndex = 0;
+    });
+    loadChapterText(chapterIndex);
   }
 }

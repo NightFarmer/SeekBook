@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,7 @@ class _BookDetailState extends State<BookDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    var imgWidth = 80;
     return Scaffold(
       appBar: TopBar(),
       body: Column(
@@ -66,11 +68,24 @@ class _BookDetailState extends State<BookDetailPage> {
             child: Text('阅读'),
           ),
           imgUrl != ''
-              ? Image.network(
-                  imgUrl,
-                  width: dp(100),
+              ? new CachedNetworkImage(
+                  imageUrl: imgUrl,
+                  placeholder: Container(
+                    width: dp(imgWidth),
+                    height: dp(imgWidth / 144 * 192),
+                  ),
+                  errorWidget: Container(
+                    width: dp(imgWidth),
+                    height: dp(imgWidth / 144 * 192),
+                  ),
+                  width: dp(imgWidth),
+                  height: dp(imgWidth / 144 * 192),
+                  fit: BoxFit.cover,
                 )
-              : Text("封面"),
+              : Container(
+                  width: dp(imgWidth),
+                  height: dp(imgWidth / 144 * 192),
+                ),
           Text('追书状态：$bookActive'),
           GestureDetector(
             onTap: () {
@@ -125,10 +140,12 @@ class _BookDetailState extends State<BookDetailPage> {
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
 
-    var bookInfo = await BookSiteKenWen().bookDetail(name, author, url, (exist) {
+    var bookInfo =
+        await BookSiteKenWen().bookDetail(name, author, url, (exist) {
       if (exist.length > 0) {
         setState(() {
           bookActive = exist[0]['active'] ?? 0;
+          imgUrl = exist[0]['imgUrl'];
         });
       } else {
         bookActive = 0;

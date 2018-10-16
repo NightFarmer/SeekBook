@@ -18,6 +18,7 @@ class ReadPage extends StatefulWidget {
 
 class _ReadPageState extends State<ReadPage> {
   final GlobalKey<ReadOptionLayerState> optionLayerKey = new GlobalKey();
+  final GlobalKey<ReadPagerState> readPagerKey = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +28,7 @@ class _ReadPageState extends State<ReadPage> {
           children: <Widget>[
             Positioned(
               child: ReadPager(
+                key: readPagerKey,
                 bookInfo: widget.bookInfo,
                 optionLayerKey: optionLayerKey,
               ),
@@ -36,7 +38,11 @@ class _ReadPageState extends State<ReadPage> {
               bottom: 0.0,
             ),
             Positioned(
-              child: ReadOptionLayer(key: optionLayerKey),
+              child: ReadOptionLayer(
+                key: optionLayerKey,
+                bookInfo: widget.bookInfo,
+                readPagerKey: readPagerKey,
+              ),
               left: 0.0,
               top: 0.0,
               right: 0.0,

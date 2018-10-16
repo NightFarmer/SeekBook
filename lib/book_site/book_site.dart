@@ -6,8 +6,7 @@ import 'package:html/parser.dart';
 import 'package:seek_book/globals.dart' as Globals;
 
 abstract class BookSite {
-
-  bookDetail(name, author, url, onFindExist) async {
+  bookDetail(name, author, url, [onFindExist]) async {
 //    var name = this.bookInfo['name'];
 //    var author = this.bookInfo['author'];
 //    var url = this.bookInfo['url'];
@@ -18,7 +17,9 @@ abstract class BookSite {
       'select * from Book where name=? and author=?',
       [name, author],
     );
-    onFindExist(exist);
+    if (onFindExist != null) {
+      onFindExist(exist);
+    }
 
     Dio dio = new Dio();
     Response response = await dio.get(url);
@@ -39,6 +40,7 @@ abstract class BookSite {
       "currentChapterIndex": 0,
       "active": 0,
       "chapterList": [],
+      "hasNew": 0,
     };
     if (exist.length > 0) {
       bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
@@ -57,6 +59,7 @@ abstract class BookSite {
         "currentPageIndex": exist[0]["currentPageIndex"],
         "currentChapterIndex": exist[0]["currentChapterIndex"],
         "active": exist[0]["active"],
+        "hasNew": 0,
       };
       chapters = exist[0]["chapters"];
       print("存在相同时间戳缓存");
@@ -78,6 +81,7 @@ abstract class BookSite {
           "currentPageIndex": 0,
           "currentChapterIndex": 0,
           "active": 0,
+          "hasNew": 0,
         };
         print("插入");
         await txn.insert('Book', bookInfo);
@@ -86,12 +90,14 @@ abstract class BookSite {
         bookInfo["imgUrl"] = imgUrl;
         bookInfo["updateTime"] = currentUpdateTime;
         bookInfo["chapters"] = chapters;
+        bookInfo["hasNew"] = 1;
         await txn.update(
           'Book',
           {
             "imgUrl": imgUrl,
             "updateTime": currentUpdateTime,
             "chapters": chapters,
+            "hasNew": 1,
           },
           where: "name=? and author=?",
           whereArgs: [name, author],
@@ -100,6 +106,7 @@ abstract class BookSite {
     });
     return bookInfo;
   }
+
   searchBook(String text);
 
   Future<String> parseChapter(String chapterUrl);

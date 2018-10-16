@@ -300,7 +300,16 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
                       ),
                       child: Row(
                         children: <Widget>[
-                          Text('${chapterList[index]['title']}')
+                          Expanded(
+                            child: Text(
+                              '${chapterList[index]['title']}',
+                              style: TextStyle(
+                                fontSize: dp(15),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                         ],
                       ),
                     ),

@@ -169,18 +169,62 @@ class MyBookListState extends State<MyBookList> {
     var item = bookList[index];
     var latestChapter =
         item['chapterList'][item['chapterList'].length - 1]['title'];
-    var bookInfoRow = <Widget>[
-      buildBookImg(item),
-      Text("${item['name'].trim()}"),
+
+    var infoRow = <Widget>[
       Expanded(
-        child: Text("${latestChapter}"),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+//          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Text(
+              "${item['name'].trim()}",
+              style: TextStyle(
+                fontSize: dp(18),
+              ),
+            ),
+            Text(
+              "${latestChapter}",
+              style: TextStyle(
+                fontSize: dp(13.5),
+                height: 1.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+    var bookInfoRow = <Widget>[
+      Container(
+        child: buildBookImg(item),
+        margin: EdgeInsets.symmetric(horizontal: dp(20)),
+      ),
+      Expanded(
+        child: Container(
+//          margin: EdgeInsets.only(left: dp(10)),
+          padding: EdgeInsets.only(right: dp(10)),
+          child: Row(
+            children: infoRow,
+          ),
+          decoration: BoxDecoration(
+//            color: Color(0xFFff0000),
+            border: Border(
+              bottom: BorderSide(
+                color: index == (bookList.length - 1)
+                    ? Colors.transparent
+                    : Color(0xFFdddddd),
+//                width: 1,
+              ),
+            ),
+          ),
+        ),
       ),
     ];
     print("build  ----  ${item['hasNew']}, ${item['name']}");
 //    if (item['hasNew'] == 1 || true) {
     if (loadingMap[item['id']] == true) {
       var dotWidth = dp(10);
-      bookInfoRow.add(
+      infoRow.add(
 //        CupertinoActivityIndicator(
 //          radius: dp(20),
 //        ),
@@ -192,13 +236,18 @@ class MyBookListState extends State<MyBookList> {
         ),
       );
     } else if (item['hasNew'] == 1) {
-      var dotWidth = dp(10);
-      bookInfoRow.add(Container(
-        width: dotWidth,
-        height: dotWidth,
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.all(Radius.circular(dotWidth / 2)),
+      var dotWidth = dp(8);
+      infoRow.add(Container(
+        width: dp(20),
+        height: dp(20),
+        alignment: Alignment.center,
+        child: Container(
+          width: dotWidth,
+          height: dotWidth,
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.all(Radius.circular(dotWidth / 2)),
+          ),
         ),
       ));
     }
@@ -221,8 +270,9 @@ class MyBookListState extends State<MyBookList> {
         showRowChoice(context, item);
       },
       child: Container(
-        width: ScreenAdaptation.screenWidth,
-        color: Colors.green.withOpacity(0.1),
+        height: dp(100),
+//        width: ScreenAdaptation.screenWidth,
+//        color: Colors.green.withOpacity(0.1),
         child: Row(
           children: bookInfoRow,
         ),
@@ -232,7 +282,7 @@ class MyBookListState extends State<MyBookList> {
 
   Widget buildBookImg(item) {
     String imgUrl = item['imgUrl'];
-    int imgWidth = 80;
+    int imgWidth = 50;
     if (imgUrl.isEmpty) {
       return Container(
         width: dp(imgWidth),

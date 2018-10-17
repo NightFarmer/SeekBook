@@ -117,18 +117,8 @@ class ReadPagerState extends State<ReadPager> {
 
     this.currentPageIndex = widget.bookInfo['currentPageIndex'];
     this.currentChapterIndex = widget.bookInfo['currentChapterIndex'];
-    Globals.database.update(
-      'Book',
-      {
-        "currentPageIndex": currentPageIndex,
-        "currentChapterIndex": currentChapterIndex,
-      },
-      where: 'name=? and author=?',
-      whereArgs: [
-        widget.bookInfo['name'],
-        widget.bookInfo['author'],
-      ],
-    );
+    saveReadState();
+
 //    var chapterList = widget.bookInfo['chapterList'];
     if (currentChapterIndex < chapterList.length) {
       loadingMap[currentChapterIndex] = true;
@@ -265,6 +255,7 @@ class ReadPagerState extends State<ReadPager> {
       {
         "currentPageIndex": this.currentPageIndex,
         "currentChapterIndex": this.currentChapterIndex,
+        "hasNew": 0,
       },
       where: "id=?",
       whereArgs: [widget.bookInfo['id']],

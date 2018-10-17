@@ -257,8 +257,8 @@ class ReadPagerState extends State<ReadPager> {
         "currentChapterIndex": this.currentChapterIndex,
         "hasNew": 0,
       },
-      where: "id=?",
-      whereArgs: [widget.bookInfo['id']],
+      where: "name=? and author=?",
+      whereArgs: [widget.bookInfo['name'], widget.bookInfo['author']],
     );
   }
 

@@ -90,7 +90,6 @@ class MyBookListState extends State<MyBookList> {
         key: _refreshIndicatorKey,
         onRefresh: _handleRefresh,
         child: ListView.builder(
-          padding: kMaterialListPadding,
           itemCount: bookList.length,
           itemBuilder: buildRow,
         ),
@@ -180,14 +179,14 @@ class MyBookListState extends State<MyBookList> {
             Text(
               "${item['name'].trim()}",
               style: TextStyle(
-                fontSize: dp(18),
+                fontSize: dp(16),
               ),
             ),
             Text(
               "${latestChapter}",
               style: TextStyle(
-                fontSize: dp(13.5),
-                height: 1.3,
+                fontSize: dp(12),
+                height: 1.5,
               ),
             ),
           ],
@@ -271,6 +270,7 @@ class MyBookListState extends State<MyBookList> {
       },
       child: Container(
         height: dp(100),
+        color: Color(0x00FFFFFF),
 //        width: ScreenAdaptation.screenWidth,
 //        color: Colors.green.withOpacity(0.1),
         child: Row(

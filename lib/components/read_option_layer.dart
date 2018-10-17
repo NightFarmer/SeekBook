@@ -146,6 +146,7 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
                       Navigator.pop(context);
                     },
                     child: Container(
+                      color: Color(0x00ffffff),
                       child: Image.asset(
                         "assets/images/ab_back.png",
                         width: dp(23),

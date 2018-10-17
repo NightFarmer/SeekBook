@@ -63,16 +63,23 @@ class MyBookListState extends State<MyBookList> {
       book['url'],
       null,
     );
+    if (bookNew == null) {
+      setState(() {
+        loadingMap.remove(book['id']);
+      });
+      return;
+    }
 //    if (bookNew['updateTime'] != book['updateTime'] || true) {
-//    if (bookNew['updateTime'] != book['updateTime']) {
     setState(() {
       loadingMap.remove(book['id']);
-      bookNew['updateTime'] = book['updateTime'];
-      bookNew['hasNew'] = book['hasNew'];
-      bookNew['imgUrl'] = book['imgUrl'];
-      bookNew['chapters'] = book['chapters'];
+      book['updateTime'] = bookNew['updateTime'];
+      book['hasNew'] = bookNew['hasNew'];
+      book['imgUrl'] = bookNew['imgUrl'];
+      book['chapters'] = bookNew['chapters'];
+      if (bookNew['updateTime'] != book['updateTime']) {
+        book['chapterList'] = json.decode(book['chapters']);
+      }
     });
-//    }
   }
 
   @override
@@ -169,7 +176,7 @@ class MyBookListState extends State<MyBookList> {
         child: Text("${latestChapter}"),
       ),
     ];
-//    print("build  ----  ${item['hasNew']}, ${item['name']}");
+    print("build  ----  ${item['hasNew']}, ${item['name']}");
 //    if (item['hasNew'] == 1 || true) {
     if (loadingMap[item['id']] == true) {
       var dotWidth = dp(10);

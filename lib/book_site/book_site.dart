@@ -25,13 +25,19 @@ abstract class BookSite {
 
 //    print("书籍详情网络已返回0  $name  $url");
     Dio dio = new Dio();
-    Response response = await dio.get(
-      url,
-      options: Options(
-        connectTimeout: 5000,
-        receiveTimeout: 5000,
-      ),
-    );
+    Response response;
+    try {
+      response = await dio.get(
+        url,
+        options: Options(
+          connectTimeout: 5000,
+          receiveTimeout: 5000,
+        ),
+      );
+    } catch (e) {
+      print(e);
+      return null;
+    }
 //    print("书籍详情网络已返回1  $name");
     var document = parse(response.data);
 //    print("书籍详情网络已返回2  $name");
@@ -70,7 +76,7 @@ abstract class BookSite {
         "currentPageIndex": exist[0]["currentPageIndex"],
         "currentChapterIndex": exist[0]["currentChapterIndex"],
         "active": exist[0]["active"],
-        "hasNew": 0,
+        "hasNew": exist[0]["hasNew"],
       };
       chapters = exist[0]["chapters"];
       print("存在相同时间戳缓存");

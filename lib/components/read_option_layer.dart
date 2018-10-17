@@ -1,9 +1,12 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:seek_book/components/read_pager.dart';
+import 'package:seek_book/pages/demopage.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/utils/status_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +30,8 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
   var layerShow = false;
 
   Map bookInfo;
+
+  bool tocOrder = false;
 
   @override
   void initState() {
@@ -260,69 +265,129 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
     setState(() {});
   }
 
-  showTocListDialog() {
+  showTocListDialog() async {
+//    await Navigator.push(
+//      context,
+//      CupertinoPageRoute(
+//        builder: (context) => DemoPage(),
+//      ),
+//    );
+//    return;
 //    var color = Color(0xFFffffff).withOpacity(0.4);
 //    print('Color(0xFFffffff).withOpacity(0.4) 输出 $color');
     final ThemeData theme = Theme.of(context);
     List chapterList = bookInfo['chapterList'];
+    var scrollController = ScrollController(
+//      initialScrollOffset: dp(55) *
+//          max(0, widget.readPagerKey.currentState.currentChapterIndex - 5),
+        );
     showDialog<String>(
       context: context,
-      builder: (BuildContext context) => _SimpleDialog(
-            titlePadding: EdgeInsets.symmetric(
-              horizontal: dp(24),
-              vertical: dp(20),
-            ),
-            title: Container(
+      builder: (BuildContext context) {
+        return _SimpleDialog(
+          titlePadding: EdgeInsets.symmetric(
+            horizontal: dp(24),
+            vertical: dp(20),
+          ),
+          title: Container(
 //              padding: EdgeInsets.only(bottom: dp(20)),
-              child: Text(
-                bookInfo['name'],
-                style: TextStyle(fontSize: dp(17), color: theme.primaryColor),
-              ),
-            ),
-            children: Container(
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: Colors.grey)),
-//                color: Colors.red,
-              ),
-              height: vh(100) - dp(160),
-              width: vw(80),
-              child: ListView.builder(
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      widget.readPagerKey.currentState.changeChapter(index);
-                      Navigator.pop(context, '');
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: dp(20),
-                        vertical: dp(10),
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              '${chapterList[index]['title']}',
-                              style: TextStyle(
-                                fontSize: dp(15),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                itemCount: chapterList.length,
-              ),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    bookInfo['name'],
+                    style:
+                        TextStyle(fontSize: dp(17), color: theme.primaryColor),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: toggleTocOrder,
+                  child: Text(tocOrder ? "倒序" : "正序"),
+                )
+              ],
             ),
           ),
+          children: Container(
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: Colors.grey)),
+//                color: Colors.red,
+            ),
+            height: vh(100) - dp(160),
+            width: vw(80),
+            child: ListView.builder(
+              controller: scrollController,
+              itemBuilder: buildCRow,
+              itemCount: chapterList.length,
+//              reverse: true,
+            ),
+          ),
+        );
+      },
     ).then<void>((String value) {
       // The value passed to Navigator.pop() or null.
       if (value != null) {}
     });
+//    Future.delayed(Duration(milliseconds: 1000)).then((a) {
+//      print("1111111111");
+//      scrollController.jumpTo(
+//          dp(35) * widget.readPagerKey.currentState.currentChapterIndex);
+//    });
+  }
+
+  Widget buildCRow(context, index) {
+    var textStyle = TextStyle(
+      fontSize: dp(15),
+    );
+    if (tocOrder) {
+      index = bookInfo['chapterList'].length - index - 1;
+    }
+    if (index == widget.readPagerKey.currentState.currentChapterIndex) {
+      textStyle = TextStyle(
+        fontSize: dp(15),
+        color: Color(0xFFff0000),
+      );
+    }
+    if (bookInfo['chapterList'].length ==
+            widget.readPagerKey.currentState.currentChapterIndex &&
+        index == widget.readPagerKey.currentState.currentChapterIndex - 1) {
+      textStyle = TextStyle(
+        fontSize: dp(15),
+        color: Color(0xFFff0000),
+      );
+    }
+    return GestureDetector(
+      onTap: () {
+        widget.readPagerKey.currentState.changeChapter(index);
+        Navigator.pop(context, '');
+      },
+      child: Container(
+        height: dp(55),
+        padding: EdgeInsets.symmetric(
+          horizontal: dp(20),
+//                        vertical: dp(10),
+        ),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                '${bookInfo['chapterList'][index]['title']}',
+                style: textStyle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  toggleTocOrder() async {
+    setState(() {
+      tocOrder = !tocOrder;
+    });
+    Navigator.pop(context, '');
+    showTocListDialog();
   }
 }
 

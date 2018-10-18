@@ -103,8 +103,11 @@ class MyBookListState extends State<MyBookList> {
   @override
   Widget build(BuildContext context) {
     print("build 书籍列表");
+    final ThemeData theme = Theme.of(context);
+    bookList.sort((b, a) => (a['updateTime'] ?? 0) - (b['updateTime'] ?? 0));
     return Container(
       child: RefreshIndicator(
+        color: theme.primaryColor,
         key: _refreshIndicatorKey,
         onRefresh: _handleRefresh,
         child: ListView.builder(
@@ -183,6 +186,8 @@ class MyBookListState extends State<MyBookList> {
   }
 
   Widget buildRow(context, index) {
+    final ThemeData theme = Theme.of(context);
+
     var item = bookList[index];
     var latestChapter = '';
     if (item['chapterList'].length > 0) {
@@ -250,7 +255,8 @@ class MyBookListState extends State<MyBookList> {
 //        ),
         Container(
           child: FittedBox(
-            child: CircularProgressIndicator(),
+//            child: CircularProgressIndicator(),
+            child: CupertinoActivityIndicator(),
           ),
           width: dp(20),
         ),

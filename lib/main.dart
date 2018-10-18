@@ -84,7 +84,11 @@ class MyAppState extends State<MyApp> {
 //        primarySwatch: Colors.blue,
 //        primarySwatch: Colors.blue,
         platform: TargetPlatform.android,
-        primaryColor: Colors.black,
+//        primaryColor: Colors.black,
+//        primaryColor: Color(0xFF1f95da),
+        primaryColor: Color(0xFF6c96ff),
+//        primaryColor: Color(0xFF528cff),
+//        primaryColor: Color(0xFFfd5b67),
 //        fontFamily: "ReadFont",
         inputDecorationTheme: InputDecorationTheme(
 //          border: NoneInputBorder(),

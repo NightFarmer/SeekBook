@@ -14,8 +14,8 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="seek_book"
-        android:icon="@mipmap/ic_launcher">
+        android:label="书探"
+        android:icon="@drawable/ic_book">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

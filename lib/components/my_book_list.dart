@@ -77,14 +77,15 @@ class MyBookListState extends State<MyBookList> {
 //    if (bookNew['updateTime'] != book['updateTime'] || true) {
 //    setState(() {
     loadingMap.remove(book['id']);
-    if (bookNew['updateTime'] != book['updateTime'] &&
-        book['chapters'] != null) {
-      book['chapterList'] = json.decode(book['chapters']);
-    }
+//    if (bookNew['updateTime'] != book['updateTime'] &&
+//        book['chapters'] != null) {
+//      book['chapterList'] = json.decode(book['chapters']);
+//    }
     book['updateTime'] = bookNew['updateTime'];
     book['hasNew'] = bookNew['hasNew'];
     book['imgUrl'] = bookNew['imgUrl'];
     book['chapters'] = bookNew['chapters'];
+    book['chapterList'] = bookNew['chapterList'];
 //    });
 //    callbackTime = DateTime.now().millisecondsSinceEpoch;
 //    print("可以刷了");

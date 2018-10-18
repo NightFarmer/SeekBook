@@ -51,6 +51,10 @@ abstract class BookSite {
           var result = await instance.parseBookDetail(param);
           replyTo.send(result);
           return;
+        case 'parseChapterText':
+          var result = await instance.parseChapterText(param);
+          replyTo.send(result);
+          return;
       }
       replyTo.send(null);
       return;
@@ -92,23 +96,10 @@ abstract class BookSite {
       'data': response.data,
       'url': url,
     });
-//    print("bookDetail $bookDetail");
-//    print("书籍详情网络已返回1  $name");
-//    var t1 = DateTime.now().millisecondsSinceEpoch;
-//    var document = parse(response.data);
-//    var t2 = DateTime.now().millisecondsSinceEpoch;
-//    print('耗时  ${t2 - t1}');
-//    print("书籍详情网络已返回2  $name");
-//    var imgUrl = parseBookImage(document, url);
     var imgUrl = bookDetail['imgUrl'];
-//    var imgUrl = '';
-//    print(imgUrl);
-//    var currentUpdateTime = parseUpdateTime(document, url);
     var currentUpdateTime = bookDetail['updateTime'];
-//    var currentUpdateTime = exist[0]["updateTime"];
-    print('$currentUpdateTime ');
 
-    String chapters;
+//    String chapters;
     Map<String, dynamic> bookInfo = {
       "name": name,
       "author": author,
@@ -120,6 +111,7 @@ abstract class BookSite {
       "currentChapterIndex": 0,
       "active": 0,
       "chapterList": [],
+      "chapters": '[]',
       "hasNew": 0,
     };
     if (exist.length > 0) {
@@ -143,13 +135,13 @@ abstract class BookSite {
         "active": exist[0]["active"],
         "hasNew": exist[0]["hasNew"],
       };
-      chapters = exist[0]["chapters"];
       print("存在相同时间戳缓存");
     } else {
 //      List chapterList = parseChapterList(document, url);
 //      chapters = json.encode(chapterList);
-      List chapterList = bookDetail['chapterList'];
-      chapters = json.encode(chapterList);
+//      List chapterList = bookDetail['chapterList'];
+      bookInfo['chapters'] = bookDetail['chapters'];
+      bookInfo['chapterList'] = bookDetail['chapterList'];
     }
 
     await database.transaction((txn) async {
@@ -161,7 +153,7 @@ abstract class BookSite {
           "url": url,
           "site": 'www',
           "updateTime": currentUpdateTime,
-          "chapters": chapters,
+          "chapters": bookDetail['chapters'],
           "currentPageIndex": 0,
           "currentChapterIndex": 0,
           "active": 0,
@@ -169,18 +161,18 @@ abstract class BookSite {
         };
         print("插入");
         await txn.insert('Book', bookInfo);
+        bookInfo["chapterList"] = bookDetail['chapterList'];
       } else if (currentUpdateTime != exist[0]["updateTime"]) {
         print("更新 ${currentUpdateTime}");
         bookInfo["imgUrl"] = imgUrl;
         bookInfo["updateTime"] = currentUpdateTime;
-        bookInfo["chapters"] = chapters;
         bookInfo["hasNew"] = 1;
         await txn.update(
           'Book',
           {
             "imgUrl": imgUrl,
             "updateTime": currentUpdateTime,
-            "chapters": chapters,
+            "chapters": bookInfo["chapters"],
             "hasNew": 1,
           },
           where: "name=? and author=?",
@@ -193,13 +185,35 @@ abstract class BookSite {
 
   searchBook(String text);
 
-  Future<String> parseChapter(String chapterUrl);
+  Future<String> parseChapterText(param);
 
   List<Map> parseChapterList(Document document, String bookUrl);
 
   String parseBookImage(Document document, String bookUrl);
 
   int parseUpdateTime(Document document, String bookUrl);
+
+  Future<String> parseChapter(String chapterUrl) async {
+    Dio dio = new Dio();
+//    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
+    Response response = await dio.get(chapterUrl);
+    var chapterText = await runOnIsoLate(this, 'parseChapterText', {
+      'chapterUrl': chapterUrl,
+      'data': response.data,
+    });
+    await Globals.database.transaction((txn) async {
+      List<Map> existData = await txn
+          .rawQuery('select text from chapter where id = ?', [chapterUrl]);
+      if (existData.length > 0) {
+        return existData[0]['text'];
+      }
+      await txn.insert('chapter', {
+        "id": chapterUrl,
+        "text": chapterText,
+      });
+    });
+    return chapterText;
+  }
 
   Future<Map> parseBookDetail(param) async {
     var document = parse(param['data']);

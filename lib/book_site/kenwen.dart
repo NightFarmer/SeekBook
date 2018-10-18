@@ -9,6 +9,10 @@ import 'package:seek_book/globals.dart' as Globals;
 class BookSiteKenWen extends BookSite {
   final String site = '啃文书库';
 
+  test() {
+    print('222222');
+  }
+
   searchBook(String text) async {
     Dio dio = new Dio();
     var book = text ?? '逆天邪神';
@@ -68,7 +72,7 @@ class BookSiteKenWen extends BookSite {
   @override
   int parseUpdateTime(Document document, String bookUrl) {
     var updateTimeStr = document.querySelector('#info').children[3].text;
-    print(updateTimeStr);
+//    print(updateTimeStr);
     var split = updateTimeStr.replaceAll('最后更新：', '').split(' ');
     var dateStr = split[0];
     var timeStr = split[1];
@@ -114,4 +118,6 @@ class BookSiteKenWen extends BookSite {
     });
     return content;
   }
+
+
 }

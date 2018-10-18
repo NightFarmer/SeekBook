@@ -1,12 +1,62 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
+import 'package:path/path.dart';
+import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/globals.dart' as Globals;
+import 'package:sqflite/sqflite.dart';
 //import 'package:http/http.dart'  as http;
 
+abc() {}
+
 abstract class BookSite {
+  Future sendReceive(SendPort port, msg) {
+    ReceivePort response = new ReceivePort();
+    port.send([msg, response.sendPort]);
+    return response.first;
+  }
+
+  runOnIsoLate(instance, functionName, param) async {
+    ReceivePort receivePort = new ReceivePort();
+    await Isolate.spawn(_onIsoLate, receivePort.sendPort);
+
+    // The 'echo' isolate sends it's SendPort as the first message
+    SendPort sendPort = await receivePort.first;
+
+    var result = await sendReceive(sendPort, {
+      'instance': instance,
+      'functionName': functionName,
+      'param': param,
+    });
+    return result;
+  }
+
+  static _onIsoLate(SendPort sendPort) async {
+    // Open the ReceivePort for incoming messages.
+    ReceivePort port = new ReceivePort();
+
+    // Notify any other isolates what port this isolate listens to.
+    sendPort.send(port.sendPort);
+    await for (var msg in port) {
+      var data = msg[0];
+      SendPort replyTo = msg[1];
+      var instance = data['instance'];
+      var functionName = data['functionName'];
+      var param = data['param'];
+      switch (functionName) {
+        case 'parseBookDetail':
+          var result = await instance.parseBookDetail(param);
+          replyTo.send(result);
+          return;
+      }
+      replyTo.send(null);
+      return;
+    }
+  }
+
   bookDetail(name, author, url, [onFindExist]) async {
 //    print("请求书籍详情  $name");
 //    var name = this.bookInfo['name'];
@@ -38,14 +88,27 @@ abstract class BookSite {
       print(e);
       return null;
     }
+    var bookDetail = await runOnIsoLate(this, 'parseBookDetail', {
+      'data': response.data,
+      'url': url,
+    });
+//    print("bookDetail $bookDetail");
 //    print("书籍详情网络已返回1  $name");
-    var document = parse(response.data);
+//    var t1 = DateTime.now().millisecondsSinceEpoch;
+//    var document = parse(response.data);
+//    var t2 = DateTime.now().millisecondsSinceEpoch;
+//    print('耗时  ${t2 - t1}');
 //    print("书籍详情网络已返回2  $name");
-    var imgUrl = parseBookImage(document, url);
+//    var imgUrl = parseBookImage(document, url);
+    var imgUrl = bookDetail['imgUrl'];
+//    var imgUrl = '';
 //    print(imgUrl);
-    var currentUpdateTime = parseUpdateTime(document, url);
+//    var currentUpdateTime = parseUpdateTime(document, url);
+    var currentUpdateTime = bookDetail['updateTime'];
+//    var currentUpdateTime = exist[0]["updateTime"];
+    print('$currentUpdateTime ');
 
-    var chapters;
+    String chapters;
     Map<String, dynamic> bookInfo = {
       "name": name,
       "author": author,
@@ -72,7 +135,9 @@ abstract class BookSite {
         "site": exist[0]["site"],
         "updateTime": exist[0]["updateTime"],
         "chapters": exist[0]["chapters"],
-        "chapterList": json.decode(exist[0]["chapters"]),
+        "chapterList": exist[0]["chapters"] == null
+            ? []
+            : json.decode(exist[0]["chapters"]),
         "currentPageIndex": exist[0]["currentPageIndex"],
         "currentChapterIndex": exist[0]["currentChapterIndex"],
         "active": exist[0]["active"],
@@ -81,7 +146,9 @@ abstract class BookSite {
       chapters = exist[0]["chapters"];
       print("存在相同时间戳缓存");
     } else {
-      List chapterList = parseChapterList(document, url);
+//      List chapterList = parseChapterList(document, url);
+//      chapters = json.encode(chapterList);
+      List chapterList = bookDetail['chapterList'];
       chapters = json.encode(chapterList);
     }
 
@@ -133,4 +200,18 @@ abstract class BookSite {
   String parseBookImage(Document document, String bookUrl);
 
   int parseUpdateTime(Document document, String bookUrl);
+
+  Future<Map> parseBookDetail(param) async {
+    var document = parse(param['data']);
+    var imgUrl = parseBookImage(document, param['url']);
+    var updateTime = parseUpdateTime(document, param['url']);
+    var chapterList = parseChapterList(document, param['url']);
+
+    return {
+      "updateTime": updateTime,
+      "imgUrl": imgUrl,
+      "chapters": jsonEncode(chapterList),
+      "chapterList": chapterList,
+    };
+  }
 }

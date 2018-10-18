@@ -53,10 +53,15 @@ class MyBookListState extends State<MyBookList> {
     setState(() {});
 //    await Future.delayed(Duration(milliseconds: 3000));
     await Future.wait(requestList);
-//    setState(() {});
   }
 
   Future<dynamic> refreshBook(book) async {
+//    var bookNewxxx = await BookSiteKenWen().ddd(
+//      book['name'],
+//      book['author'],
+//      book['url'],
+//    );
+//    return;
     var bookNew = await BookSiteKenWen().bookDetail(
       book['name'],
       book['author'],
@@ -70,17 +75,29 @@ class MyBookListState extends State<MyBookList> {
       return;
     }
 //    if (bookNew['updateTime'] != book['updateTime'] || true) {
-    setState(() {
-      loadingMap.remove(book['id']);
-      book['updateTime'] = bookNew['updateTime'];
-      book['hasNew'] = bookNew['hasNew'];
-      book['imgUrl'] = bookNew['imgUrl'];
-      book['chapters'] = bookNew['chapters'];
-      if (bookNew['updateTime'] != book['updateTime']) {
-        book['chapterList'] = json.decode(book['chapters']);
-      }
-    });
+//    setState(() {
+    loadingMap.remove(book['id']);
+    if (bookNew['updateTime'] != book['updateTime'] &&
+        book['chapters'] != null) {
+      book['chapterList'] = json.decode(book['chapters']);
+    }
+    book['updateTime'] = bookNew['updateTime'];
+    book['hasNew'] = bookNew['hasNew'];
+    book['imgUrl'] = bookNew['imgUrl'];
+    book['chapters'] = bookNew['chapters'];
+//    });
+//    callbackTime = DateTime.now().millisecondsSinceEpoch;
+//    print("可以刷了");
+//    await Future.delayed(Duration(milliseconds: 500));
+//    if (DateTime.now().millisecondsSinceEpoch < callbackTime + 500) {
+//      print("中断");
+//      return;
+//    }
+    print('刷新');
+    setState(() {});
   }
+
+//  var callbackTime = DateTime.now().millisecondsSinceEpoch;
 
   @override
   Widget build(BuildContext context) {
@@ -166,8 +183,11 @@ class MyBookListState extends State<MyBookList> {
 
   Widget buildRow(context, index) {
     var item = bookList[index];
-    var latestChapter =
-        item['chapterList'][item['chapterList'].length - 1]['title'];
+    var latestChapter = '';
+    if (item['chapterList'].length > 0) {
+      latestChapter =
+          item['chapterList'][item['chapterList'].length - 1]['title'];
+    }
 
     var infoRow = <Widget>[
       Expanded(
@@ -219,7 +239,7 @@ class MyBookListState extends State<MyBookList> {
         ),
       ),
     ];
-    print("build  ----  ${item['hasNew']}, ${item['name']}");
+//    print("build  ----  ${item['hasNew']}, ${item['name']}");
 //    if (item['hasNew'] == 1 || true) {
     if (loadingMap[item['id']] == true) {
       var dotWidth = dp(10);
@@ -283,7 +303,7 @@ class MyBookListState extends State<MyBookList> {
   Widget buildBookImg(item) {
     String imgUrl = item['imgUrl'];
     int imgWidth = 50;
-    if (imgUrl.isEmpty) {
+    if (imgUrl == null || imgUrl.isEmpty) {
       return Container(
         width: dp(imgWidth),
         height: dp(imgWidth / 144 * 192),
@@ -319,8 +339,8 @@ class MyBookListState extends State<MyBookList> {
     String path = join(databasesPath, "seek_book.db");
 
     var database = await openDatabase(path);
-    List<Map> list =
-        await database.rawQuery('SELECT * FROM Book where active=?', [1]);
+    List<Map> list = await database.rawQuery(
+        'SELECT * FROM Book where active=? order by updateTime desc', [1]);
     list = list.map((it) {
       return {
         'id': it['id'],
@@ -329,7 +349,8 @@ class MyBookListState extends State<MyBookList> {
         'url': it['url'],
         'updateTime': it['updateTime'],
         'imgUrl': it['imgUrl'],
-        'chapterList': json.decode(it['chapters']),
+        'chapterList':
+            it['chapters'] == null ? [] : json.decode(it['chapters']),
         'site': it['site'],
         'currentPageIndex': it['currentPageIndex'],
         'currentChapterIndex': it['currentChapterIndex'],

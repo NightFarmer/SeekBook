@@ -5,8 +5,10 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:seek_book/components/clickable.dart';
 import 'package:seek_book/components/read_pager.dart';
 import 'package:seek_book/pages/demopage.dart';
+import 'package:seek_book/utils/browser.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/utils/status_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -179,7 +181,10 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
                         horizontal: dp(20),
                       ),
                       color: Color(0xff2A2929),
-                      child: GestureDetector(
+                      child: Clickable(
+                        onClick: () {
+                          Browser.openURL(chapterUrl);
+                        },
                         child: Row(
                           children: <Widget>[
                             Expanded(

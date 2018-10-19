@@ -65,20 +65,14 @@ class ReadPagerState extends State<ReadPager> {
   void initState() {
     readTextWidth = ScreenAdaptation.screenWidth - dp(32);
     readTextHeight =
-        ScreenAdaptation.screenHeight - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
+        ScreenAdaptation.screenHeight - dp(38) - dp(44); //减去头部章节名称高度，减去底部页码高度
     lineHeight = dp(27);
     print("lineHeight $lineHeight");
     var lineNum = (readTextHeight / lineHeight).floor();
 //    lineHeight = (readTextHeight / lineNum).floorToDouble();
     lineHeight = (readTextHeight / lineNum);
     print("lineHeight $lineHeight");
-    textStyle = new TextStyle(
-      height: 1.2,
-      fontSize: dp(17),
-      letterSpacing: dp(1),
-      color: Color(0xff383635),
-      fontFamily: 'ReadFont',
-    );
+    textStyle = buildTextStyle();
 
     List chapterList = widget.bookInfo['chapterList'];
 
@@ -269,18 +263,12 @@ class ReadPagerState extends State<ReadPager> {
       chapterPagerDataMap = Map(); //调整字体后需要清空,url为key
     }
     readTextWidth = newReadTextWidth;
-    readTextHeight = vh(100) - dp(35) - dp(44); //减去头部章节名称高度，减去底部页码高度
+    readTextHeight = vh(100) - dp(38) - dp(44); //减去头部章节名称高度，减去底部页码高度
     lineHeight = dp(27);
     var lineNum = (readTextHeight / lineHeight).floor();
 //    lineHeight = (readTextHeight / lineNum).floorToDouble();
     lineHeight = (readTextHeight / lineNum);
-    textStyle = new TextStyle(
-      height: 1.2,
-      fontSize: dp(17),
-      letterSpacing: dp(1),
-      color: Color(0xff383635),
-      fontFamily: 'ReadFont',
-    );
+    textStyle = buildTextStyle();
 
     print("build  hole  page !!!!! ${Platform.operatingSystem}");
     var pageView = new PageView.builder(
@@ -354,6 +342,17 @@ class ReadPagerState extends State<ReadPager> {
 //        onTap: (){},
       ),
       onNotification: onPageScrollNotify,
+    );
+  }
+
+  TextStyle buildTextStyle() {
+    return new TextStyle(
+      height: 1.0,
+      fontSize: dp(18),
+      letterSpacing: dp(1),
+      fontFamily: 'ReadFont',
+      color:
+          Globals.readTheme == 'normal' ? Color(0xff383635) : Color(0xffFFFFFF),
     );
   }
 
@@ -583,8 +582,9 @@ class ReadPagerState extends State<ReadPager> {
       height: readTextHeight,
       lineHeight: lineHeight,
       // 阅读文字颜色
-      color:
-          Globals.readTheme == 'normal' ? Color(0xff383635) : Color(0xffFFFFFF),
+      style: textStyle,
+//      color:
+//          Globals.readTheme == 'normal' ? Color(0xff383635) : Color(0xffFFFFFF),
     );
   }
 

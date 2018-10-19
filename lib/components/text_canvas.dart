@@ -45,14 +45,14 @@ class ChapterTextPainter extends CustomPainter {
   final double height;
   final double lineHeight;
 
-  final Color color;
+  final TextStyle style;
 
   ChapterTextPainter({
     this.text,
     this.width,
     this.height,
     this.lineHeight,
-    this.color,
+    this.style,
   });
 
   @override
@@ -69,13 +69,6 @@ class ChapterTextPainter extends CustomPainter {
 
 //    canvas.draw
 
-    var textStyle = new TextStyle(
-      height: 1.2,
-      fontSize: dp(17),
-      letterSpacing: dp(1),
-      color: color,
-      fontFamily: 'ReadFont',
-    );
     var allChart = text.split('');
 
 //    var charWidth = 18;
@@ -89,7 +82,7 @@ class ChapterTextPainter extends CustomPainter {
     int lineCount = 0;
     for (int i = 0; i < allChart.length; i++) {
       var char = allChart[i];
-      TextSpan span = new TextSpan(style: textStyle, text: char);
+      TextSpan span = new TextSpan(style: style, text: char);
       TextPainter tp = new TextPainter(
           text: span,
           textAlign: TextAlign.left,
@@ -106,8 +99,8 @@ class ChapterTextPainter extends CustomPainter {
 //        }
       }
 
-//      print("$char\t${tp.size}");
       var yOffset = yCharCount * lineHeight + (lineHeight - tp.size.height) / 2;
+//      print("$char\t${tp.size}\t $yOffset");
       tp.paint(canvas, new Offset(xOffset, yOffset));
 
       xCharCount++;
@@ -129,7 +122,7 @@ class ChapterTextPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     if (oldDelegate is ChapterTextPainter) {
-      return oldDelegate.text != text || oldDelegate.color.value != color.value;
+      return oldDelegate.text != text || oldDelegate.style.color.value != style.color.value;
     }
     return false;
   }
@@ -140,7 +133,7 @@ class TextCanvas extends StatelessWidget {
   final double width;
   final double height;
   final double lineHeight;
-  final Color color;
+  final TextStyle style;
 
   TextCanvas({
     Key key,
@@ -148,7 +141,7 @@ class TextCanvas extends StatelessWidget {
     this.width,
     this.height,
     this.lineHeight,
-    this.color,
+    this.style,
   }) : super(key: key);
 
   @override
@@ -159,7 +152,7 @@ class TextCanvas extends StatelessWidget {
         width: width,
         height: height,
         lineHeight: lineHeight,
-        color: color,
+        style: style,
       ),
     );
   }

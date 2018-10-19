@@ -65,10 +65,9 @@ class _ReadPagerItemState extends State<ReadPagerItem> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Container(
-            height: dp(35),
+            height: dp(38),
 //            color: Colors.green,
             alignment: Alignment.topLeft,
-//            color: Colors.green,
             padding: EdgeInsets.only(top: dp(12)),
             child: Text(
               widget.title,
@@ -79,7 +78,10 @@ class _ReadPagerItemState extends State<ReadPagerItem> {
             ),
           ),
           Expanded(
+//            child: Container(
+//              color: Colors.grey,
             child: widget.text,
+//            ),
           ),
           Container(
             height: dp(44),

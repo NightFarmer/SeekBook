@@ -101,6 +101,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
   Widget buildRow(context, int) {
     var item = resultList[int];
     return Clickable(
+      pressedOpacity: 0.4,
       onClick: () {
         Navigator.push(
           context,
@@ -122,10 +123,22 @@ class _BookSearchPageState extends State<BookSearchPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(item['name']),
+                Text(
+                  item['name'],
+                  style: TextStyle(
+                    fontSize: dp(16),
+                    color: Color(0xFF333333),
+                  ),
+                ),
                 Row(
                   children: <Widget>[
-                    Text(item['author']),
+                    Text(
+                      item['author'],
+                      style: TextStyle(
+                        fontSize: dp(16),
+                        color: Color(0xFF333333),
+                      ),
+                    ),
                   ],
                 ),
               ],

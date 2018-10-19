@@ -96,6 +96,9 @@ abstract class BookSite {
       'data': response.data,
       'url': url,
     });
+    if (bookDetail == null) {
+      return null;
+    }
     var imgUrl = bookDetail['imgUrl'];
     var currentUpdateTime = bookDetail['updateTime'];
 
@@ -193,6 +196,8 @@ abstract class BookSite {
 
   int parseUpdateTime(Document document, String bookUrl);
 
+  bool isBookDetailEmpty(String data);
+
   Future<String> parseChapter(String chapterUrl) async {
     Dio dio = new Dio();
 //    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
@@ -216,7 +221,9 @@ abstract class BookSite {
   }
 
   Future<Map> parseBookDetail(param) async {
-    var document = parse(param['data']);
+    var data = param['data'];
+    if (isBookDetailEmpty(data)) return null;
+    var document = parse(data);
     var imgUrl = parseBookImage(document, param['url']);
     var updateTime = parseUpdateTime(document, param['url']);
     var chapterList = parseChapterList(document, param['url']);

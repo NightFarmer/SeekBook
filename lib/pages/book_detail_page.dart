@@ -35,9 +35,10 @@ class _BookDetailState extends State<BookDetailPage> {
 
   var orderBy = 0;
 
+  BuildContext _scaffoldContext;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     this.bookInfo = widget.bookInfo;
     this.loadData();
@@ -46,63 +47,68 @@ class _BookDetailState extends State<BookDetailPage> {
   @override
   Widget build(BuildContext context) {
     var imgWidth = 80;
-    return Scaffold(
-      appBar: TopBar(),
-      body: Column(
-        children: <Widget>[
-          SafeArea(child: Text("xxx")),
-          Container(
-            child: Text('${bookInfo['name']}'),
-          ),
-          Container(
-            child: Text('${bookInfo['author']}'),
-          ),
-          GestureDetector(
-            onTap: () {
-              toggleToSave();
-            },
-            child: Text("${bookActive == 1 ? '取消' : '追书'}"),
-          ),
-          GestureDetector(
-            onTap: () {},
-            child: Text('阅读'),
-          ),
-          imgUrl != ''
-              ? new CachedNetworkImage(
-                  imageUrl: imgUrl,
-                  placeholder: Container(
-                    width: dp(imgWidth),
-                    height: dp(imgWidth / 144 * 192),
-                  ),
-                  errorWidget: Container(
-                    width: dp(imgWidth),
-                    height: dp(imgWidth / 144 * 192),
-                  ),
-                  width: dp(imgWidth),
-                  height: dp(imgWidth / 144 * 192),
-                  fit: BoxFit.cover,
-                )
-              : Container(
+    var body = Column(
+      children: <Widget>[
+        Container(
+          child: Text('${bookInfo['name']}'),
+        ),
+        Container(
+          child: Text('${bookInfo['author']}'),
+        ),
+        GestureDetector(
+          onTap: () {
+            toggleToSave();
+          },
+          child: Text("${bookActive == 1 ? '取消' : '追书'}"),
+        ),
+        GestureDetector(
+          onTap: () {},
+          child: Text('阅读'),
+        ),
+        imgUrl != ''
+            ? new CachedNetworkImage(
+                imageUrl: imgUrl,
+                placeholder: Container(
                   width: dp(imgWidth),
                   height: dp(imgWidth / 144 * 192),
                 ),
-          Text('追书状态：$bookActive'),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                orderBy = (orderBy + 1) % 2;
-              });
-            },
-            child: Text("倒序"),
+                errorWidget: Container(
+                  width: dp(imgWidth),
+                  height: dp(imgWidth / 144 * 192),
+                ),
+                width: dp(imgWidth),
+                height: dp(imgWidth / 144 * 192),
+                fit: BoxFit.cover,
+              )
+            : Container(
+                width: dp(imgWidth),
+                height: dp(imgWidth / 144 * 192),
+              ),
+        Text('追书状态：$bookActive'),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              orderBy = (orderBy + 1) % 2;
+            });
+          },
+          child: Text("倒序"),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemBuilder: buildRow,
+            itemCount: chapterList.length,
           ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: buildRow,
-              itemCount: chapterList.length,
-            ),
-          ),
-        ],
+        ),
+      ],
+    );
+    return Scaffold(
+      appBar: TopBar(
+        title: bookInfo['name'],
       ),
+      body: Builder(builder: (BuildContext _scaffoldContext) {
+        this._scaffoldContext = _scaffoldContext;
+        return body;
+      }),
     );
   }
 
@@ -121,7 +127,8 @@ class _BookDetailState extends State<BookDetailPage> {
                   'url': bookInfo['url'],
                   'updateTime': bookInfo['updateTime'],
                   'imgUrl': bookInfo['imgUrl'],
-                  'chapterList': json.decode(bookInfo['chapters']),
+//                  'chapterList': json.decode(bookInfo['chapters']),
+                  'chapterList': bookInfo['chapterList'],
                   'site': bookInfo['site'],
                   'currentPageIndex': 0,
                   'currentChapterIndex': index,
@@ -139,7 +146,6 @@ class _BookDetailState extends State<BookDetailPage> {
     var name = this.bookInfo['name'];
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
-
     var bookInfo =
         await BookSiteKenWen().bookDetail(name, author, url, (exist) {
       if (exist.length > 0) {
@@ -154,10 +160,19 @@ class _BookDetailState extends State<BookDetailPage> {
 
     if (!mounted) return;
     setState(() {
-      this.imgUrl = bookInfo['imgUrl'];
-      this.updateTime = bookInfo['updateTime'];
-      this.chapterList = json.decode(bookInfo['chapters']);
-      this.bookInfo = bookInfo;
+      if (bookInfo != null) {
+        this.imgUrl = bookInfo['imgUrl'];
+        this.updateTime = bookInfo['updateTime'];
+//        this.chapterList = json.decode(bookInfo['chapters']);
+        this.chapterList = bookInfo['chapterList'];
+        this.bookInfo = bookInfo;
+        if (chapterList == null || chapterList.length == 0) {
+          showSnack("书籍章节数量为0，请尝试切换书源。");
+        }
+      } else {
+        print("查询失败，书籍不存在，请尝试切换书源。");
+        showSnack("查询失败，书籍不存在，请尝试切换书源。");
+      }
     });
 
 //    var encode = json.encode(chapterList);
@@ -185,5 +200,18 @@ class _BookDetailState extends State<BookDetailPage> {
         bookActive = newState;
       });
     });
+  }
+
+  showSnack(String msg) {
+    Scaffold.of(_scaffoldContext).showSnackBar(SnackBar(
+      content: Text(msg),
+      action: SnackBarAction(
+          label: '确定',
+          onPressed: () {
+//            Scaffold.of(context).showSnackBar(SnackBar(
+//                content: Text('You pressed snackbar $thisSnackBarIndex\'s action.')
+//            ));
+          }),
+    ));
   }
 }

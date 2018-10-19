@@ -1,17 +1,12 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path/path.dart';
+import 'package:seek_book/components/home_page_top_bar.dart';
 import 'package:seek_book/components/my_book_list.dart';
 import 'package:seek_book/pages/book_search_page.dart';
-import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
-import 'package:seek_book/utils/status_bar.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:seek_book/globals.dart' as Globals;
 
 class MainPage extends StatefulWidget {
   @override
@@ -33,11 +28,31 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenAdaptation.designSize = 414.0;
+    ScreenAdaptation.init(context);
+    final ThemeData theme = Theme.of(context);
+    Widget scaffold = Scaffold(
+      appBar: HomePageTopBar(
+        onRightButtonClick: () {
+          myBookListKey.currentState.loadData();
+        },
+      ),
+      body: MyBookList(key: myBookListKey),
+    );
+    //浅色状态栏文字
+    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.light;
+//    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.dark;
+    return new AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle,
+      child: scaffold,
+      sized: false,
+    );
+
+//    return scaffold;
 //    ScreenAdaptation.designSize = 414.0;
 //    ScreenAdaptation.init(context);
-    final ThemeData theme = Theme.of(context);
 
-    var scaffold = Container(
+    scaffold = Container(
       color: theme.primaryColor,
       child: SafeArea(
         child: Scaffold(
@@ -45,17 +60,17 @@ class _MainPageState extends State<MainPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Container(
-//                color: Color(0xFFffae87),
+                color: theme.primaryColor,
 //                height: dp(80),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      theme.primaryColor,
-                      theme.primaryColor,
-//                      Color(0xFFffae87),
-                    ],
-                  ),
-                ),
+//                decoration: BoxDecoration(
+//                  gradient: LinearGradient(
+//                    colors: [
+//                      theme.primaryColor,
+//                      theme.primaryColor,
+////                      Color(0xFFffae87),
+//                    ],
+//                  ),
+//                ),
                 padding: EdgeInsets.symmetric(
                   vertical: dp(10),
                   horizontal: dp(10),
@@ -144,13 +159,13 @@ class _MainPageState extends State<MainPage> {
       ),
     );
     //浅色状态栏文字
-    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.light;
-//    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.dark;
-    return new AnnotatedRegion<SystemUiOverlayStyle>(
-      value: overlayStyle,
-      child: scaffold,
-      sized: false,
-    );
-//    return scaffold;
+//    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.light;
+////    final SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle.dark;
+//    return new AnnotatedRegion<SystemUiOverlayStyle>(
+//      value: overlayStyle,
+//      child: scaffold,
+//      sized: false,
+//    );
+////    return scaffold;
   }
 }

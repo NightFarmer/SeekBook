@@ -104,4 +104,11 @@ class BookSiteKenWen extends BookSite {
         .join('\n');
     return content;
   }
+
+  @override
+  bool isBookDetailEmpty(String data) {
+    if (data == null) return true;
+    if (data.indexOf('你似乎来到了没有存在的地址') != -1) return true;
+    return false;
+  }
 }

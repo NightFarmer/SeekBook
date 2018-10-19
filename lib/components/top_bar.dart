@@ -99,15 +99,16 @@ class _TopBarDefaultChild extends StatelessWidget {
       onClick: () {
         Navigator.pop(context);
       },
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: dp(14.0),
-          vertical: dp(10.0),
-        ),
+      child: Container(
         child: Image.asset(
-          "assets/images/ab_back.png",
-          width: dp(32.0),
+          'assets/images/ab_back.png',
+          width: dp(25),
+          height: dp(25),
         ),
+        width: dp(60),
+        height: dp(55),
+        alignment: Alignment.center,
+        color: Color(0x00ffffff),
       ),
     );
     var buttons = <Widget>[];

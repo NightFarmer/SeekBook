@@ -89,7 +89,7 @@ class MyAppState extends State<MyApp> {
         primaryColor: Color(0xFF6c96ff),
 //        primaryColor: Color(0xFF528cff),
 //        primaryColor: Color(0xFFfd5b67),
-//        fontFamily: "ReadFont",
+        fontFamily: "ReadFont",
         inputDecorationTheme: InputDecorationTheme(
 //          border: NoneInputBorder(),
           border: InputBorder.none,

@@ -74,7 +74,7 @@ class ChapterTextPainter extends CustomPainter {
       fontSize: dp(17),
       letterSpacing: dp(1),
       color: color,
-//        fontFamily: 'ReadFont',
+      fontFamily: 'ReadFont',
     );
     var allChart = text.split('');
 

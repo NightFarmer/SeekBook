@@ -77,7 +77,7 @@ class ReadPagerState extends State<ReadPager> {
       fontSize: dp(17),
       letterSpacing: dp(1),
       color: Color(0xff383635),
-//        fontFamily: 'ReadFont',
+      fontFamily: 'ReadFont',
     );
 
     List chapterList = widget.bookInfo['chapterList'];
@@ -279,7 +279,7 @@ class ReadPagerState extends State<ReadPager> {
       fontSize: dp(17),
       letterSpacing: dp(1),
       color: Color(0xff383635),
-//        fontFamily: 'ReadFont',
+      fontFamily: 'ReadFont',
     );
 
     print("build  hole  page !!!!! ${Platform.operatingSystem}");

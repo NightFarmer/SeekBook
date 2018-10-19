@@ -13,34 +13,62 @@ class BookSiteKenWen extends BookSite {
     print('222222');
   }
 
+  @override
   searchBook(String text) async {
-    Dio dio = new Dio();
-    var book = text ?? '逆天邪神';
-    var url = 'https://sou.xanbhx.com/search?siteid=kenwencom&q=${book}';
-    Response response = await dio.get(
-      url,
-      options: Options(
-        connectTimeout: 5000,
-        receiveTimeout: 5000,
-      ),
-    );
-    var document = parse(response.data);
-    var querySelector = document.querySelectorAll('ul li');
-    var resultList = querySelector
-        .where((it) => it.querySelector('.s1').text != '作品分类')
-        .map((row) {
-      var bookLink = row.querySelector('.s2 a');
-      var name = bookLink.text.trim();
-      var url = bookLink.attributes['href'].trim();
-      var author = row.querySelector('.s4').text.trim();
+    var url =
+        'http://zhannei.baidu.com/cse/search?q=$text&s=14794566617686326772';
+    var data = await request(url, 5);
+    if (data == null) return [];
+    var document = parse(data);
+//    print(document.querySelector('.result-list'));
+    var resultList = document.querySelector('.result-list').children.map((row) {
+      String imgUrl = row
+          .querySelector('img.result-game-item-pic-link-img')
+          .attributes['src'];
+      var titleRow = row.querySelector('.result-game-item-title-link');
+      var name = titleRow.attributes["title"];
+      var url = titleRow.attributes["href"];
+      var author = row
+          .querySelector('.result-game-item-info-tag')
+          .children[1]
+          .text
+          .trim();
       return {
         "name": name,
         "url": url,
         "author": author,
+        "imgUrl": imgUrl,
       };
     }).toList();
-//    print(resultList);
+
     return resultList;
+//    Dio dio = new Dio();
+//    var book = text ?? '逆天邪神';
+//    var url = 'https://sou.xanbhx.com/search?siteid=kenwencom&q=${book}';
+//    Response response = await dio.get(
+//      url,
+//      options: Options(
+//        connectTimeout: 5000,
+//        receiveTimeout: 5000,
+//      ),
+//    );
+//    var document = parse(response.data);
+//    var querySelector = document.querySelectorAll('ul li');
+//    var resultList = querySelector
+//        .where((it) => it.querySelector('.s1').text != '作品分类')
+//        .map((row) {
+//      var bookLink = row.querySelector('.s2 a');
+//      var name = bookLink.text.trim();
+//      var url = bookLink.attributes['href'].trim();
+//      var author = row.querySelector('.s4').text.trim();
+//      return {
+//        "name": name,
+//        "url": url,
+//        "author": author,
+//      };
+//    }).toList();
+////    print(resultList);
+//    return resultList;
   }
 
   @override

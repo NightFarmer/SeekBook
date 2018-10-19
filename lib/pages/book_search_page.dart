@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/components/book_img.dart';
 import 'package:seek_book/components/clickable.dart';
 import 'package:seek_book/components/top_bar.dart';
 import 'package:seek_book/pages/book_detail_page.dart';
@@ -98,8 +100,8 @@ class _BookSearchPageState extends State<BookSearchPage> {
 
   Widget buildRow(context, int) {
     var item = resultList[int];
-    return GestureDetector(
-      onTap: () {
+    return Clickable(
+      onClick: () {
         Navigator.push(
           context,
           CupertinoPageRoute(
@@ -108,8 +110,28 @@ class _BookSearchPageState extends State<BookSearchPage> {
         );
       },
       child: Container(
+        color: Color(0x00FFFFFF),
         padding: EdgeInsets.all(dp(10)),
-        child: Text('${item['name']}--- ${item['author']}'),
+        child: Row(
+          children: <Widget>[
+            BookImg(
+              imgUrl: item['imgUrl'],
+              width: dp(60),
+            ),
+//            Text('${item['name']}--- ${item['author']}')
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(item['name']),
+                Row(
+                  children: <Widget>[
+                    Text(item['author']),
+                  ],
+                ),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

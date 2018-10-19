@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/components/book_img.dart';
 import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/status_bar.dart';
 import 'package:sqflite/sqflite.dart';
@@ -221,7 +222,10 @@ class MyBookListState extends State<MyBookList> {
     ];
     var bookInfoRow = <Widget>[
       Container(
-        child: buildBookImg(item),
+        child: BookImg(
+          imgUrl: item['imgUrl'],
+//          width: dp(60),
+        ),
         margin: EdgeInsets.symmetric(horizontal: dp(20)),
       ),
       Expanded(
@@ -305,39 +309,6 @@ class MyBookListState extends State<MyBookList> {
         ),
       ),
     );
-  }
-
-  Widget buildBookImg(item) {
-    String imgUrl = item['imgUrl'];
-    int imgWidth = 50;
-    if (imgUrl == null || imgUrl.isEmpty) {
-      return Container(
-        width: dp(imgWidth),
-        height: dp(imgWidth / 144 * 192),
-      );
-    } else {
-      return new CachedNetworkImage(
-        imageUrl: imgUrl,
-//        placeholder: new CircularProgressIndicator(),
-        placeholder: Container(
-          width: dp(imgWidth),
-          height: dp(imgWidth / 144 * 192),
-        ),
-//        errorWidget: new Icon(Icons.error),
-        errorWidget: Container(
-          width: dp(imgWidth),
-          height: dp(imgWidth / 144 * 192),
-        ),
-        width: dp(imgWidth),
-        height: dp(imgWidth / 144 * 192),
-        fit: BoxFit.cover,
-      );
-//      return Image.network(
-//        imgUrl,
-//        width: dp(100),
-//        height: dp(100),
-//      );
-    }
   }
 
   Future<Null> loadData() async {

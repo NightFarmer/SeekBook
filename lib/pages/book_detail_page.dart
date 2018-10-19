@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/components/book_img.dart';
 import 'package:seek_book/components/top_bar.dart';
 import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
@@ -65,25 +66,10 @@ class _BookDetailState extends State<BookDetailPage> {
           onTap: () {},
           child: Text('阅读'),
         ),
-        imgUrl != ''
-            ? new CachedNetworkImage(
-                imageUrl: imgUrl,
-                placeholder: Container(
-                  width: dp(imgWidth),
-                  height: dp(imgWidth / 144 * 192),
-                ),
-                errorWidget: Container(
-                  width: dp(imgWidth),
-                  height: dp(imgWidth / 144 * 192),
-                ),
-                width: dp(imgWidth),
-                height: dp(imgWidth / 144 * 192),
-                fit: BoxFit.cover,
-              )
-            : Container(
-                width: dp(imgWidth),
-                height: dp(imgWidth / 144 * 192),
-              ),
+        BookImg(
+          imgUrl: imgUrl,
+          width: dp(80),
+        ),
         Text('追书状态：$bookActive'),
         GestureDetector(
           onTap: () {
@@ -146,6 +132,7 @@ class _BookDetailState extends State<BookDetailPage> {
     var name = this.bookInfo['name'];
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
+    imgUrl = this.bookInfo['imgUrl'];
     var bookInfo =
         await BookSiteKenWen().bookDetail(name, author, url, (exist) {
       if (exist.length > 0) {
@@ -154,7 +141,9 @@ class _BookDetailState extends State<BookDetailPage> {
           imgUrl = exist[0]['imgUrl'];
         });
       } else {
-        bookActive = 0;
+        setState(() {
+          bookActive = 0;
+        });
       }
     });
 

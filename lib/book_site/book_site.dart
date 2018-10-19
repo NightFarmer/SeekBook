@@ -13,6 +13,32 @@ import 'package:sqflite/sqflite.dart';
 abc() {}
 
 abstract class BookSite {
+  //最多请求3次，失败则返回失败。
+  Future request(String url, [retryTime = 3]) async {
+    try {
+      if (retryTime == 0) {
+        return null;
+      }
+      print("request");
+      Dio dio = new Dio();
+      Response response = await dio.get(
+        url,
+        options: Options(
+          connectTimeout: 5000,
+          receiveTimeout: 5000,
+        ),
+      );
+      var data = response.data;
+      print('ok');
+      return data;
+    } catch (e) {
+      print(e);
+      await Future.delayed(Duration(milliseconds: 500));
+      return await request(url, retryTime - 1);
+    }
+  }
+
+
   Future sendReceive(SendPort port, msg) {
     ReceivePort response = new ReceivePort();
     port.send([msg, response.sendPort]);

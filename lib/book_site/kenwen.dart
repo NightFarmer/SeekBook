@@ -13,9 +13,14 @@ class BookSiteKenWen extends BookSite {
   searchBook(String text) async {
     var url =
         'http://zhannei.baidu.com/cse/search?q=$text&s=14794566617686326772';
-    var data = await request(url, 5);
+    Response response = await request(url, 5);
+//    print(response.statusCode);
+    String data = response.data;
     if (data == null) return [];
+    if (data.indexOf('页面不存在') != -1) return [];
     var document = parse(data);
+//    print(url);
+//    print(data);
 //    print(document.querySelector('.result-list'));
     var resultList = document.querySelector('.result-list').children.map((row) {
       String imgUrl = row

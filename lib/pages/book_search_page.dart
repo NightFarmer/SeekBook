@@ -73,13 +73,13 @@ class _BookSearchPageState extends State<BookSearchPage> {
                 child: TextField(
                   controller: _controller,
                   style: TextStyle(
-                    fontSize: dp(14.5),
+                    fontSize: dp(17),
                     color: Color(0xFFffffff),
                   ),
                   decoration: InputDecoration(
                     hintText: "搜索书名或者作者",
                     hintStyle: TextStyle(
-                      fontSize: dp(14.5),
+                      fontSize: dp(17),
                       color: Color(0x99ffffff),
                     ),
                     contentPadding: EdgeInsets.symmetric(horizontal: dp(4.0)),
@@ -91,15 +91,23 @@ class _BookSearchPageState extends State<BookSearchPage> {
           ),
         ),
       ),
-      body: ListView.builder(
-        itemBuilder: buildRow,
-        itemCount: resultList.length,
+//      body: ListView.builder(
+//        itemBuilder: buildRow,
+//        itemCount: resultList.length,
+//      ),
+      body: ListView(
+        children: ListTile.divideTiles(
+          tiles: resultList.map((item) => buildRow(context, item)).toList(),
+          context: context,
+        ).toList(),
       ),
     );
   }
 
-  Widget buildRow(context, int) {
-    var item = resultList[int];
+//  Widget buildRow(context, int) {
+  Widget buildRow(context, item) {
+//    var item = resultList[int];
+    var theme = Theme.of(context);
     return Clickable(
       pressedOpacity: 0.4,
       onClick: () {
@@ -115,28 +123,45 @@ class _BookSearchPageState extends State<BookSearchPage> {
         padding: EdgeInsets.all(dp(10)),
         child: Row(
           children: <Widget>[
-            BookImg(
-              imgUrl: item['imgUrl'],
-              width: dp(60),
+            Container(
+              child: BookImg(
+                imgUrl: item['imgUrl'],
+                width: dp(60),
+              ),
+              margin: EdgeInsets.only(right: dp(10)),
             ),
 //            Text('${item['name']}--- ${item['author']}')
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  item['name'],
-                  style: TextStyle(
-                    fontSize: dp(16),
-                    color: Color(0xFF333333),
+                Container(
+                  child: Text(
+                    item['name'],
+                    style: TextStyle(
+                      fontSize: dp(18),
+                      color: Color(0xFF333333),
+                    ),
                   ),
+                  margin: EdgeInsets.only(bottom: dp(8)),
                 ),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
+                    Container(
+                      child: Image.asset(
+                        'assets/images/author_icon.png',
+                        width: dp(13),
+                        height: dp(13),
+//                      color: theme.primaryColor,
+                        color: Color(0xFF999999),
+                      ),
+                      margin: EdgeInsets.only(right: dp(5)),
+                    ),
                     Text(
                       item['author'],
                       style: TextStyle(
-                        fontSize: dp(16),
-                        color: Color(0xFF333333),
+                        fontSize: dp(14),
+                        color: Color(0xFF999999),
                       ),
                     ),
                   ],

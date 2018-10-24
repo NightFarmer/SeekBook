@@ -38,7 +38,6 @@ abstract class BookSite {
     }
   }
 
-
   Future sendReceive(SendPort port, msg) {
     ReceivePort response = new ReceivePort();
     port.send([msg, response.sendPort]);
@@ -214,7 +213,7 @@ abstract class BookSite {
 
   searchBook(String text);
 
-  Future<String> parseChapterText(param);
+  Future<ChapterText> parseChapterText(param);
 
   List<Map> parseChapterList(Document document, String bookUrl);
 
@@ -228,10 +227,13 @@ abstract class BookSite {
     Dio dio = new Dio();
 //    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
     Response response = await dio.get(chapterUrl);
-    var chapterText = await runOnIsoLate(this, 'parseChapterText', {
+    ChapterText chapterText = await runOnIsoLate(this, 'parseChapterText', {
       'chapterUrl': chapterUrl,
       'data': response.data,
     });
+    if (!chapterText.valid) {
+      return chapterText.text;
+    }
     await Globals.database.transaction((txn) async {
       List<Map> existData = await txn
           .rawQuery('select text from chapter where id = ?', [chapterUrl]);
@@ -240,10 +242,10 @@ abstract class BookSite {
       }
       await txn.insert('chapter', {
         "id": chapterUrl,
-        "text": chapterText,
+        "text": chapterText.text,
       });
     });
-    return chapterText;
+    return chapterText.text;
   }
 
   Future<Map> parseBookDetail(param) async {
@@ -261,4 +263,9 @@ abstract class BookSite {
       "chapterList": chapterList,
     };
   }
+}
+
+class ChapterText {
+  String text;
+  bool valid = true;
 }

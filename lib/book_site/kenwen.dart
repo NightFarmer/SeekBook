@@ -9,10 +9,6 @@ import 'package:seek_book/globals.dart' as Globals;
 class BookSiteKenWen extends BookSite {
   final String site = '啃文书库';
 
-  test() {
-    print('222222');
-  }
-
   @override
   searchBook(String text) async {
     var url =
@@ -119,7 +115,7 @@ class BookSiteKenWen extends BookSite {
   }
 
   @override
-  Future<String> parseChapterText(param) async {
+  Future<ChapterText> parseChapterText(param) async {
     String data = param['data'];
     //      await Future.delayed(Duration(milliseconds: 5000));
     var document = parse(data);
@@ -130,7 +126,12 @@ class BookSiteKenWen extends BookSite {
         .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
         .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
         .join('\n');
-    return content;
+    var chapterText = new ChapterText();
+    chapterText.text = content;
+    if (content == null || content == '' || content.indexOf('正在努力手打中') != -1) {
+      chapterText.valid = false;
+    }
+    return chapterText;
   }
 
   @override

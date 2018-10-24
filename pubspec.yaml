@@ -53,6 +53,10 @@ flutter:
    - assets/images/ic_menu_toc_normal.png
    - assets/images/ic_action_search.png
    - assets/images/author_icon.png
+   - assets/images/start_read.png
+   - assets/images/start_read.png
+   - assets/images/add_read.png
+   - assets/images/change_read.png
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

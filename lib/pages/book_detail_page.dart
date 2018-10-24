@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/components/book_img.dart';
+import 'package:seek_book/components/clickable.dart';
 import 'package:seek_book/components/top_bar.dart';
 import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
@@ -85,12 +86,97 @@ class _BookDetailState extends State<BookDetailPage> {
             itemCount: chapterList.length,
           ),
         ),
+        PhysicalModel(
+          color: Colors.white,
+          elevation: dp(24),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Clickable(
+                  child: Container(
+                    child: Column(
+                      children: <Widget>[
+                        Image.asset(
+                          'assets/images/add_read.png',
+                          width: dp(24),
+                          height: dp(24),
+                          color: Color(0xFF333333),
+                        ),
+                        Text(
+                          '加入追书', //已加入追书
+                          style: TextStyle(
+                            color: Color(0xFF333333),
+                            fontSize: dp(14),
+                          ),
+//                        style: TextStyle(color: Color(0xFF999999)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: dp(8)),
+                  color: Theme.of(context).primaryColor,
+                  child: Clickable(
+                    child: Container(
+                      child: Column(
+                        children: <Widget>[
+                          Image.asset(
+                            'assets/images/start_read.png',
+                            width: dp(25),
+                            height: dp(25),
+                            color: Color(0xFFffffff),
+                          ),
+                          Text(
+                            '开始阅读',
+                            style: TextStyle(
+                              color: Color(0xFFffffff),
+                              fontSize: dp(16),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Clickable(
+                  child: Container(
+//                  child: Text('章节倒序'),
+                    child: Column(
+                      children: <Widget>[
+                        Image.asset(
+                          'assets/images/change_read.png',
+                          width: dp(24),
+                          height: dp(24),
+                          color: Color(0xFF333333),
+                        ),
+                        Text(
+                          '切换书源',
+                          style: TextStyle(
+                            color: Color(0xFF333333),
+                            fontSize: dp(14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
     return Scaffold(
       appBar: TopBar(
         title: bookInfo['name'],
       ),
+      backgroundColor: Colors.white,
       body: Builder(builder: (BuildContext _scaffoldContext) {
         this._scaffoldContext = _scaffoldContext;
         return body;

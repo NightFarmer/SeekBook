@@ -166,6 +166,8 @@ class _BookSearchPageState extends State<BookSearchPage> {
                     ),
                   ],
                 ),
+                Text("${item['kind']}"),
+                Text("${item['lastChapter']}"),
               ],
             )
           ],

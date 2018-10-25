@@ -5,12 +5,13 @@ import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:path/path.dart';
+import 'package:seek_book/book_site/book_source.dart';
 import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/globals.dart' as Globals;
 import 'package:sqflite/sqflite.dart';
-//import 'package:http/http.dart'  as http;
+import 'package:http/http.dart' as http;
 
-abc() {}
+import 'package:gbk2utf8/gbk2utf8.dart';
 
 abstract class BookSite {
   //最多请求3次，失败则返回失败。
@@ -21,13 +22,66 @@ abstract class BookSite {
       }
       print("request");
       Dio dio = new Dio();
-      Response response = await dio.get(
-        url,
-        options: Options(
-          connectTimeout: 5000,
-          receiveTimeout: 5000,
-        ),
-      );
+//      Response response;
+      http.Response response;
+      if (url.indexOf('@') != -1) {
+//        response = await dio.post(
+//          url.split('@')[0],
+////          url.replaceAll('@', '?'),
+//          options: Options(
+//            connectTimeout: 5000,
+//            receiveTimeout: 5000,
+//          ),
+//          data: FormData.from({'searchkey': "逆天邪神"}),
+//          data: FormData.from({'searchkey': "逆天邪神"}),
+//        );
+//        http.Response response = await http.post(url.split('@')[0], body: {});
+//        response = await http.post(url.replaceAll('@', '?'), body: {});
+        Map<String, String> body = {
+//          "searchkey": "逆天邪神",
+        };
+        url.split('@')[1].split('&').forEach((paramStr) {
+          var paramKV = paramStr.split('=');
+          body[paramKV[0]] = paramKV[1];
+        });
+        response = await http.post(
+//          url.replaceAll('@', '?'),
+          url.split('@')[0],
+          body: body,
+//          headers: {
+//            "Content-Type": "application/x-www-form-urlencoded"
+//          },
+//          encoding: Encoding.getByName("gbk"),
+        );
+//        print("post 请求");
+//        print(response.body);
+//        print(response.statusCode);
+        if (response.statusCode == 302) {
+          print('重定向！！！！！！ ${response.body}');
+//          print(response.request.url.host);
+//          print(response.request.url.scheme);
+//          print(response.request.url.query);
+//          print(response.request.url.pathSegments);
+//          print(response.request.url.queryParameters);
+//          print(response.request.url.path);
+          print(response.request.url.origin);
+          print(response.headers['location']);
+          var url2 =
+              '${response.request.url.origin}${response.headers['location']}';
+          print(url2);
+          return await request(url2, retryTime - 1);
+        }
+        print("post 请求2");
+      } else {
+//        response = await dio.get(
+//          url,
+//          options: Options(
+//            connectTimeout: 5000,
+//            receiveTimeout: 5000,
+//          ),
+//        );
+        response = await http.get(url);
+      }
 //      var data = response.data;
       print('ok');
       return response;
@@ -78,6 +132,10 @@ abstract class BookSite {
           return;
         case 'parseChapterText':
           var result = await instance.parseChapterText(param);
+          replyTo.send(result);
+          return;
+        case 'parseBookListByRoleInBack':
+          var result = await instance.parseBookListByRoleInBack(param);
           replyTo.send(result);
           return;
       }
@@ -211,7 +269,7 @@ abstract class BookSite {
     return bookInfo;
   }
 
-  searchBook(String text);
+//  searchBook(String text);
 
   Future<ChapterText> parseChapterText(param);
 
@@ -222,6 +280,279 @@ abstract class BookSite {
   int parseUpdateTime(Document document, String bookUrl);
 
   bool isBookDetailEmpty(String data);
+
+  parseOneRole(doc, String role) {
+    var roleList = role.split('|');
+    List result = [];
+    try {
+      for (int i = 0; i < roleList.length; i++) {
+        List temp = _parseOneRole(doc, roleList[i]);
+        if (temp != null && temp.length > 0) {
+          result = temp;
+          break;
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+    return result;
+  }
+
+  _parseOneRole(doc, String role) {
+    List<String> words = role.split('.');
+    String type = words[0];
+    String typeValue = words[1];
+    typeValue = typeValue.split('!')[0];
+    List<Element> eleList;
+    switch (type) {
+      case 'class':
+        eleList = doc.querySelectorAll('.${typeValue}');
+        print('找 class ${typeValue}  $eleList');
+        break;
+      case 'tag':
+        eleList = doc.querySelectorAll('${typeValue}');
+        print('找 tag ${typeValue}  $eleList');
+        break;
+      case 'id':
+        eleList = doc.querySelectorAll('#${typeValue}');
+        break;
+      case 'children':
+        return doc.children;
+    }
+    if (words.length == 3) {
+      int index = int.parse(words[2]);
+      if (index > eleList.length - 1) {
+        return [];
+      }
+      Element ele = eleList[index];
+      return [ele];
+    } else if (words.length == 2) {
+      if (words[1].indexOf("!") == -1) {
+        return eleList;
+      } else {
+        var countRule = words[1].split('!')[1];
+        var countRuleList = countRule.split(':');
+        var result = [];
+//        print(' xxx  $countRule  $eleList');
+        for (int i = 0; i < eleList.length; i++) {
+//          print('第几个：$i');
+          var valid = true;
+          for (int j = 0; j < countRuleList.length; j++) {
+            var count = countRuleList[j];
+            if (count == '%' && i == eleList.length - 1) {
+              valid = false;
+              break;
+            }
+            if (count != '%' && int.parse(count) == i) {
+              valid = false;
+              break;
+            }
+          }
+//          print("结果是否加入 $valid");
+          if (valid) {
+            result.add(eleList[i]);
+          }
+        }
+        return result;
+      }
+    }
+    return null;
+  }
+
+  parseWholeRole(doc, String role) {
+    var roles = role.split('#');
+    String roleWithoutRes = roles[0]; //去掉尾部正则
+    var roleList = roleWithoutRes.split('|');
+    List result = [];
+    try {
+      for (int i = 0; i < roleList.length; i++) {
+        List temp = _parseWholeRole(doc, roleList[i]);
+        if (temp != null && temp.length > 0) {
+          result = temp;
+          break;
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+    if (roles.length == 1) return result;
+    List resultRegExp = [];
+    result.forEach((item) {
+      if (item is String) {
+        resultRegExp.add(item.replaceAll(new RegExp(roles[1]), ''));
+      } else {
+        resultRegExp.add(item);
+      }
+    });
+    return resultRegExp;
+  }
+
+  _parseWholeRole(doc, String role) {
+    var temp = [doc];
+
+    // 拆分多个规则
+    List<String> roleList = role.split('@');
+
+    for (int i = 0; i < roleList.length; i++) {
+      var roleD = roleList[i];
+      var newTmpList = [];
+      temp.forEach((tempItem) {
+        print("执行规则 ${roleD}  $tempItem");
+        if (roleD.split('.').length > 1 || roleD == 'children') {
+          var tempResult = parseOneRole(tempItem, roleD);
+          newTmpList.addAll(tempResult);
+//        print('规则执行完成.');
+        } else {
+          // 取数值
+          switch (roleD) {
+            case 'text':
+//              print("text test test test test");
+//              print(tempItem.firstChild);
+//              print(tempItem.children);
+//              print(tempItem.firstChild.runtimeType);
+//              print(tempItem.firstChild.text);
+              String text = tempItem.firstChild.text;
+//              if (text == null || text.trim().length == 0) {
+              text = tempItem.text;
+//              }
+              newTmpList.add(text);
+              break;
+            case 'href':
+              newTmpList.add(tempItem.attributes['href']);
+              break;
+            case 'src':
+              newTmpList.add(tempItem.attributes['src']);
+              break;
+            case 'html':
+              newTmpList.add(tempItem.outerHtml);
+              break;
+          }
+        }
+      });
+      temp = newTmpList;
+    }
+    return temp;
+  }
+
+  parseBookListByRoleInBack(param) {
+    var data = param['data'];
+    var siteRule = json.decode(param['siteRule']);
+    var doc = parse(data);
+    List chapterItemEleList = parseWholeRole(doc, siteRule['ruleSearchList']);
+    print('查找到N本书： ${chapterItemEleList.length}');
+    var bookList = chapterItemEleList
+        .map((item) {
+          var searchBookNameResult =
+              parseWholeRole(item, siteRule['ruleSearchName']);
+          if (searchBookNameResult.length == 0) {
+            return null;
+          }
+          String name = searchBookNameResult[0];
+          print('书名：$name');
+          String url = parseWholeRole(item, siteRule['ruleSearchNoteUrl'])[0];
+          print('地址：$url');
+          var kindRule = siteRule['ruleSearchKind'];
+          String kind = '';
+          if (kindRule != null && kindRule.length > 0) {
+            var kindResult = parseWholeRole(item, kindRule);
+            if (kindResult.length > 0) {
+              kind = kindResult[0];
+            }
+          }
+          String imgUrl = '';
+          var imgUrlRule = siteRule['ruleSearchCoverUrl'];
+          if (imgUrlRule != null && imgUrlRule.length > 0) {
+            var imgResult = parseWholeRole(item, imgUrlRule);
+            if (imgResult.length > 0) {
+              imgUrl = imgResult[0];
+              print('封面：$imgUrl');
+            }
+          }
+          var authorResult = parseWholeRole(item, siteRule['ruleSearchAuthor']);
+          if (authorResult.length == 0) return null;
+          String author = authorResult[0];
+          print('作者：$author');
+          var lastChapterResult =
+              parseWholeRole(item, siteRule['ruleSearchLastChapter']);
+          String lastChapter = '';
+          if (lastChapterResult.length > 0) {
+            lastChapter = lastChapterResult[0];
+          }
+          return {
+            'name': name.trim(),
+            'url': url.trim(),
+            'author': author.trim(),
+            'lastChapter': lastChapter.trim(),
+            'kind': kind.trim(),
+            'imgUrl': imgUrl.trim(),
+          };
+        })
+        .where((it) => it != null)
+        .toList();
+    print(bookList);
+    print(bookList.length);
+    return jsonEncode(bookList);
+  }
+
+  searchBook(String text) async {
+//    var bookSource =
+//        BookSource.where((it) => jsonEncode(it).indexOf('|char=gbk') == -1)
+//            .toList();
+    var bookSource = BookSource;
+    Map siteRule = bookSource[12];
+    print(siteRule);
+
+    String searchUrl = siteRule['ruleSearchUrl'];
+
+    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+//    searchUrl = searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
+    if (isGbk) {
+      searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC');
+    } else {
+      searchUrl = searchUrl.replaceAll('searchKey', '逆天邪神');
+//      searchUrl =
+//          searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
+    }
+//    searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC%D0%B0%C9%F1');
+    searchUrl = searchUrl.replaceAll('searchPage-1', '0');
+    searchUrl = searchUrl.replaceAll('searchPage', '0');
+    searchUrl = searchUrl.replaceAll('|char=gbk', '');
+    print(searchUrl);
+    print(searchUrl.replaceAll('@', '?'));
+    http.Response response = await request(searchUrl, 5);
+//    var data = response.data;
+
+    var data = '';
+    print(response.headers);
+    if (json.encode(response.headers).indexOf('gbk') != -1 ||
+        json.encode(response.headers).indexOf('GBK') != -1 ||
+        json.encode(response.headers).indexOf('gb2312') != -1 ||
+        json.encode(response.headers).indexOf('GB2312') != -1) {
+      isGbk = true;
+    }
+    if (!isGbk && response.body.indexOf('charset="gbk"') != -1) {
+      isGbk = true;
+    }
+    if (isGbk) {
+      data = decodeGbk(response.bodyBytes);
+    } else {
+      data = response.body;
+    }
+    print(data);
+//    print(response);
+//    print(response.runtimeType);
+//    print(response.data);
+//    print(gbk2utf8(response.data));
+//    String responseBody = await response.data.transform(GbkDecoder(allowMalformed: true)).join();
+//    print(responseBody);
+
+    String bookListJSON =
+        await runOnIsoLate(this, 'parseBookListByRoleInBack', {
+      'data': data,
+      'siteRule': json.encode(siteRule),
+    });
+    return json.decode(bookListJSON);
+  }
 
   Future<String> parseChapter(String chapterUrl) async {
     Dio dio = new Dio();

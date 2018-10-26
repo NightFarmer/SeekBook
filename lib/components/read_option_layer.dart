@@ -177,7 +177,8 @@ class ReadOptionLayerState extends State<ReadOptionLayer> {
                   ? Container()
                   : Container(
                       padding: EdgeInsets.symmetric(
-                        vertical: dp(11.5),
+//                        vertical: dp(11.5),
+                        vertical: dp(0),
                         horizontal: dp(20),
                       ),
                       color: Color(0xff2A2929),

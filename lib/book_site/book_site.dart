@@ -73,13 +73,14 @@ abstract class BookSite {
         }
         print("post 请求2");
       } else {
-//        response = await dio.get(
+//        var res = await dio.get(
 //          url,
 //          options: Options(
 //            connectTimeout: 5000,
 //            receiveTimeout: 5000,
 //          ),
 //        );
+//        print(res.data);
         response = await http.get(url);
       }
 //      var data = response.data;
@@ -144,11 +145,13 @@ abstract class BookSite {
     }
   }
 
+//  bookDetail(name, author, siteHost, url, [onFindExist]) async {
+//
+//  }
+
   bookDetail(name, author, url, [onFindExist]) async {
-//    print("请求书籍详情  $name");
-//    var name = this.bookInfo['name'];
-//    var author = this.bookInfo['author'];
-//    var url = this.bookInfo['url'];
+    var bookSource = BookSource;
+    Map siteRule = bookSource[0];
 
     var database = Globals.database;
 
@@ -159,114 +162,180 @@ abstract class BookSite {
     if (onFindExist != null) {
       onFindExist(exist);
     }
+    String bookSourceUrl = siteRule['bookSourceUrl'];
+    String searchUrl = siteRule['ruleSearchUrl'];
+    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
 
-//    print("书籍详情网络已返回0  $name  $url");
-    Dio dio = new Dio();
-    Response response;
-    try {
-      response = await dio.get(
-        url,
-        options: Options(
-          connectTimeout: 5000,
-          receiveTimeout: 5000,
-        ),
-      );
-    } catch (e) {
-      print(e);
-      return null;
-    }
-    var bookDetail = await runOnIsoLate(this, 'parseBookDetail', {
-      'data': response.data,
-      'url': url,
+    print(url);
+    http.Response response = await request(url);
+    var data = requestBody2Utf8(response, isGbk);
+    print(data);
+    String ruleChapterList = siteRule['ruleChapterList'];
+    String ruleChapterName = siteRule['ruleChapterName'];
+    String ruleContentUrl = siteRule['ruleContentUrl'];
+    String ruleCoverUrl = siteRule['ruleCoverUrl'];
+//    String ruleChapterList = siteRule['ruleChapterList'];
+    var doc = parse(data);
+    List chapterListDocs = parseWholeRole(doc, ruleChapterList);
+    print('章节数量${chapterListDocs.length}');
+    List chapterList = [];
+    chapterListDocs.forEach((item) {
+      var chapterName = parseWholeRole(item, ruleChapterName)[0];
+//      print(chapterName);
+      String contentUrl = parseWholeRole(item, ruleContentUrl)[0];
+      if (contentUrl.indexOf('http') == -1) {
+        contentUrl = bookSourceUrl + contentUrl;
+      }
+//      print(contentUrl);
+      chapterList.add({
+        'title': chapterName,
+        'url': contentUrl,
+      });
     });
-    if (bookDetail == null) {
-      return null;
+    var imgUrlResult = parseWholeRole(doc, ruleCoverUrl);
+    String imgUrl;
+    if (imgUrlResult.length > 0) {
+      imgUrl = imgUrlResult[0];
     }
-    var imgUrl = bookDetail['imgUrl'];
-    var currentUpdateTime = bookDetail['updateTime'];
 
-//    String chapters;
     Map<String, dynamic> bookInfo = {
       "name": name,
       "author": author,
       "imgUrl": imgUrl,
       "url": url,
-      "site": 'www',
-      "updateTime": currentUpdateTime,
+      "site": bookSourceUrl,
+//      "updateTime": currentUpdateTime,
       "currentPageIndex": 0,
       "currentChapterIndex": 0,
       "active": 0,
-      "chapterList": [],
-      "chapters": '[]',
+      "chapterList": chapterList,
+      "chapters": json.encode(chapterList),
       "hasNew": 0,
     };
-    if (exist.length > 0) {
-      bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
-      bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
-    }
-    if (exist.length > 0 && currentUpdateTime == exist[0]["updateTime"]) {
-      bookInfo = {
-        "name": exist[0]["name"],
-        "author": exist[0]["author"],
-        "imgUrl": exist[0]["imgUrl"],
-        "url": exist[0]["url"],
-        "site": exist[0]["site"],
-        "updateTime": exist[0]["updateTime"],
-        "chapters": exist[0]["chapters"],
-        "chapterList": exist[0]["chapters"] == null
-            ? []
-            : json.decode(exist[0]["chapters"]),
-        "currentPageIndex": exist[0]["currentPageIndex"],
-        "currentChapterIndex": exist[0]["currentChapterIndex"],
-        "active": exist[0]["active"],
-        "hasNew": exist[0]["hasNew"],
-      };
-      print("存在相同时间戳缓存");
-    } else {
-//      List chapterList = parseChapterList(document, url);
-//      chapters = json.encode(chapterList);
-//      List chapterList = bookDetail['chapterList'];
-      bookInfo['chapters'] = bookDetail['chapters'];
-      bookInfo['chapterList'] = bookDetail['chapterList'];
-    }
-
-    await database.transaction((txn) async {
-      if (exist.length == 0) {
-        bookInfo = {
-          "name": name,
-          "author": author,
-          "imgUrl": imgUrl,
-          "url": url,
-          "site": 'www',
-          "updateTime": currentUpdateTime,
-          "chapters": bookDetail['chapters'],
-          "currentPageIndex": 0,
-          "currentChapterIndex": 0,
-          "active": 0,
-          "hasNew": 0,
-        };
-        print("插入");
-        await txn.insert('Book', bookInfo);
-        bookInfo["chapterList"] = bookDetail['chapterList'];
-      } else if (currentUpdateTime != exist[0]["updateTime"]) {
-        print("更新 ${currentUpdateTime}");
-        bookInfo["imgUrl"] = imgUrl;
-        bookInfo["updateTime"] = currentUpdateTime;
-        bookInfo["hasNew"] = 1;
-        await txn.update(
-          'Book',
-          {
-            "imgUrl": imgUrl,
-            "updateTime": currentUpdateTime,
-            "chapters": bookInfo["chapters"],
-            "hasNew": 1,
-          },
-          where: "name=? and author=?",
-          whereArgs: [name, author],
-        );
-      }
-    });
     return bookInfo;
+
+//    print("请求书籍详情  $name");
+//    var name = this.bookInfo['name'];
+//    var author = this.bookInfo['author'];
+//    var url = this.bookInfo['url'];
+
+//    var database = Globals.database;
+//
+//    var exist = await database.rawQuery(
+//      'select * from Book where name=? and author=?',
+//      [name, author],
+//    );
+//    if (onFindExist != null) {
+//      onFindExist(exist);
+//    }
+//
+////    print("书籍详情网络已返回0  $name  $url");
+//    Dio dio = new Dio();
+//    Response response;
+//    try {
+//      response = await dio.get(
+//        url,
+//        options: Options(
+//          connectTimeout: 5000,
+//          receiveTimeout: 5000,
+//        ),
+//      );
+//    } catch (e) {
+//      print(e);
+//      return null;
+//    }
+//    var bookDetail = await runOnIsoLate(this, 'parseBookDetail', {
+//      'data': response.data,
+//      'url': url,
+//    });
+//    if (bookDetail == null) {
+//      return null;
+//    }
+//    var imgUrl = bookDetail['imgUrl'];
+//    var currentUpdateTime = bookDetail['updateTime'];
+//
+////    String chapters;
+//    Map<String, dynamic> bookInfo = {
+//      "name": name,
+//      "author": author,
+//      "imgUrl": imgUrl,
+//      "url": url,
+//      "site": 'www',
+//      "updateTime": currentUpdateTime,
+//      "currentPageIndex": 0,
+//      "currentChapterIndex": 0,
+//      "active": 0,
+//      "chapterList": [],
+//      "chapters": '[]',
+//      "hasNew": 0,
+//    };
+//    if (exist.length > 0) {
+//      bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
+//      bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
+//    }
+//    if (exist.length > 0 && currentUpdateTime == exist[0]["updateTime"]) {
+//      bookInfo = {
+//        "name": exist[0]["name"],
+//        "author": exist[0]["author"],
+//        "imgUrl": exist[0]["imgUrl"],
+//        "url": exist[0]["url"],
+//        "site": exist[0]["site"],
+//        "updateTime": exist[0]["updateTime"],
+//        "chapters": exist[0]["chapters"],
+//        "chapterList": exist[0]["chapters"] == null
+//            ? []
+//            : json.decode(exist[0]["chapters"]),
+//        "currentPageIndex": exist[0]["currentPageIndex"],
+//        "currentChapterIndex": exist[0]["currentChapterIndex"],
+//        "active": exist[0]["active"],
+//        "hasNew": exist[0]["hasNew"],
+//      };
+//      print("存在相同时间戳缓存");
+//    } else {
+////      List chapterList = parseChapterList(document, url);
+////      chapters = json.encode(chapterList);
+////      List chapterList = bookDetail['chapterList'];
+//      bookInfo['chapters'] = bookDetail['chapters'];
+//      bookInfo['chapterList'] = bookDetail['chapterList'];
+//    }
+//
+//    await database.transaction((txn) async {
+//      if (exist.length == 0) {
+//        bookInfo = {
+//          "name": name,
+//          "author": author,
+//          "imgUrl": imgUrl,
+//          "url": url,
+//          "site": 'www',
+//          "updateTime": currentUpdateTime,
+//          "chapters": bookDetail['chapters'],
+//          "currentPageIndex": 0,
+//          "currentChapterIndex": 0,
+//          "active": 0,
+//          "hasNew": 0,
+//        };
+//        print("插入");
+//        await txn.insert('Book', bookInfo);
+//        bookInfo["chapterList"] = bookDetail['chapterList'];
+//      } else if (currentUpdateTime != exist[0]["updateTime"]) {
+//        print("更新 ${currentUpdateTime}");
+//        bookInfo["imgUrl"] = imgUrl;
+//        bookInfo["updateTime"] = currentUpdateTime;
+//        bookInfo["hasNew"] = 1;
+//        await txn.update(
+//          'Book',
+//          {
+//            "imgUrl": imgUrl,
+//            "updateTime": currentUpdateTime,
+//            "chapters": bookInfo["chapters"],
+//            "hasNew": 1,
+//          },
+//          where: "name=? and author=?",
+//          whereArgs: [name, author],
+//        );
+//      }
+//    });
+//    return bookInfo;
   }
 
 //  searchBook(String text);
@@ -307,11 +376,11 @@ abstract class BookSite {
     switch (type) {
       case 'class':
         eleList = doc.querySelectorAll('.${typeValue}');
-        print('找 class ${typeValue}  $eleList');
+//        print('找 class ${typeValue}  $eleList');
         break;
       case 'tag':
         eleList = doc.querySelectorAll('${typeValue}');
-        print('找 tag ${typeValue}  $eleList');
+//        print('找 tag ${typeValue}  $eleList');
         break;
       case 'id':
         eleList = doc.querySelectorAll('#${typeValue}');
@@ -397,7 +466,7 @@ abstract class BookSite {
       var roleD = roleList[i];
       var newTmpList = [];
       temp.forEach((tempItem) {
-        print("执行规则 ${roleD}  $tempItem");
+//        print("执行规则 ${roleD}  $tempItem");
         if (roleD.split('.').length > 1 || roleD == 'children') {
           var tempResult = parseOneRole(tempItem, roleD);
           newTmpList.addAll(tempResult);
@@ -425,6 +494,17 @@ abstract class BookSite {
               break;
             case 'html':
               newTmpList.add(tempItem.outerHtml);
+              break;
+            case 'textNodes':
+              String nodesHtml = tempItem.innerHtml;
+              String content = nodesHtml;
+              content = content
+                  .replaceAll('<script>chaptererror();</script>', '')
+                  .split("<br>")
+                  .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
+                  .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
+                  .join('\n');
+              newTmpList.add(content);
               break;
           }
         }
@@ -499,7 +579,7 @@ abstract class BookSite {
 //        BookSource.where((it) => jsonEncode(it).indexOf('|char=gbk') == -1)
 //            .toList();
     var bookSource = BookSource;
-    Map siteRule = bookSource[12];
+    Map siteRule = bookSource[0];
     print(siteRule);
 
     String searchUrl = siteRule['ruleSearchUrl'];
@@ -523,21 +603,7 @@ abstract class BookSite {
 //    var data = response.data;
 
     var data = '';
-    print(response.headers);
-    if (json.encode(response.headers).indexOf('gbk') != -1 ||
-        json.encode(response.headers).indexOf('GBK') != -1 ||
-        json.encode(response.headers).indexOf('gb2312') != -1 ||
-        json.encode(response.headers).indexOf('GB2312') != -1) {
-      isGbk = true;
-    }
-    if (!isGbk && response.body.indexOf('charset="gbk"') != -1) {
-      isGbk = true;
-    }
-    if (isGbk) {
-      data = decodeGbk(response.bodyBytes);
-    } else {
-      data = response.body;
-    }
+    data = requestBody2Utf8(response, isGbk);
     print(data);
 //    print(response);
 //    print(response.runtimeType);
@@ -554,29 +620,66 @@ abstract class BookSite {
     return json.decode(bookListJSON);
   }
 
-  Future<String> parseChapter(String chapterUrl) async {
-    Dio dio = new Dio();
-//    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
-    Response response = await dio.get(chapterUrl);
-    ChapterText chapterText = await runOnIsoLate(this, 'parseChapterText', {
-      'chapterUrl': chapterUrl,
-      'data': response.data,
-    });
-    if (!chapterText.valid) {
-      return chapterText.text;
+  String requestBody2Utf8(http.Response response, bool isGbk) {
+    print(response.headers);
+    if (json.encode(response.headers).indexOf('gbk') != -1 ||
+        json.encode(response.headers).indexOf('GBK') != -1 ||
+        json.encode(response.headers).indexOf('gb2312') != -1 ||
+        json.encode(response.headers).indexOf('GB2312') != -1) {
+      isGbk = true;
     }
-    await Globals.database.transaction((txn) async {
-      List<Map> existData = await txn
-          .rawQuery('select text from chapter where id = ?', [chapterUrl]);
-      if (existData.length > 0) {
-        return existData[0]['text'];
-      }
-      await txn.insert('chapter', {
-        "id": chapterUrl,
-        "text": chapterText.text,
-      });
-    });
-    return chapterText.text;
+    if (!isGbk && response.body.indexOf('charset="gbk"') != -1) {
+      isGbk = true;
+    }
+    if (isGbk) {
+      print('GBK编码，转一下');
+      return decodeGbk(response.bodyBytes);
+    } else {
+      print('默认Utf8编码');
+      return Utf8Codec().decode(response.bodyBytes);
+//      return response.body;
+    }
+  }
+
+  Future<String> parseChapter(String chapterUrl) async {
+    var bookSource = BookSource;
+    Map siteRule = bookSource[0];
+    var ruleBookContent = siteRule['ruleBookContent'];
+    print(chapterUrl);
+    http.Response response = await request(chapterUrl);
+
+    String searchUrl = siteRule['ruleSearchUrl'];
+    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+    String data = requestBody2Utf8(response, isGbk);
+//    print(data);
+    var doc = parse(data);
+    var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
+    return bookContentResult;
+
+
+
+//    Dio dio = new Dio();
+////    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
+//    Response response = await dio.get(chapterUrl);
+//    ChapterText chapterText = await runOnIsoLate(this, 'parseChapterText', {
+//      'chapterUrl': chapterUrl,
+//      'data': response.data,
+//    });
+//    if (!chapterText.valid) {
+//      return chapterText.text;
+//    }
+//    await Globals.database.transaction((txn) async {
+//      List<Map> existData = await txn
+//          .rawQuery('select text from chapter where id = ?', [chapterUrl]);
+//      if (existData.length > 0) {
+//        return existData[0]['text'];
+//      }
+//      await txn.insert('chapter', {
+//        "id": chapterUrl,
+//        "text": chapterText.text,
+//      });
+//    });
+//    return chapterText.text;
   }
 
   Future<Map> parseBookDetail(param) async {

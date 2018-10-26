@@ -131,45 +131,54 @@ class _BookSearchPageState extends State<BookSearchPage> {
               margin: EdgeInsets.only(right: dp(10)),
             ),
 //            Text('${item['name']}--- ${item['author']}')
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  child: Text(
-                    item['name'],
-                    style: TextStyle(
-                      fontSize: dp(18),
-                      color: Color(0xFF333333),
-                    ),
-                  ),
-                  margin: EdgeInsets.only(bottom: dp(8)),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      child: Image.asset(
-                        'assets/images/author_icon.png',
-                        width: dp(13),
-                        height: dp(13),
-//                      color: theme.primaryColor,
-                        color: Color(0xFF999999),
-                      ),
-                      margin: EdgeInsets.only(right: dp(5)),
-                    ),
-                    Text(
-                      item['author'],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    child: Text(
+                      item['name'],
                       style: TextStyle(
-                        fontSize: dp(14),
-                        color: Color(0xFF999999),
+                        fontSize: dp(18),
+                        color: Color(0xFF333333),
                       ),
                     ),
-                  ],
-                ),
-                Text("${item['kind']}"),
-                Text("${item['lastChapter']}"),
-              ],
-            )
+                    margin: EdgeInsets.only(bottom: dp(8)),
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        child: Image.asset(
+                          'assets/images/author_icon.png',
+                          width: dp(13),
+                          height: dp(13),
+//                      color: theme.primaryColor,
+                          color: Color(0xFF999999),
+                        ),
+                        margin: EdgeInsets.only(right: dp(5)),
+                      ),
+                      Text(
+                        item['author'],
+                        style: TextStyle(
+                          fontSize: dp(14),
+                          color: Color(0xFF999999),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text("${item['kind']}"),
+                  Text(
+                    "${item['lastChapter']}",
+                    style: TextStyle(
+                      fontSize: dp(16),
+                      color: Color(0xFF999999)
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

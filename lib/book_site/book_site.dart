@@ -7,6 +7,7 @@ import 'package:html/parser.dart';
 import 'package:path/path.dart';
 import 'package:seek_book/book_site/book_source.dart';
 import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/book_site/utf.dart';
 import 'package:seek_book/globals.dart' as Globals;
 import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
@@ -52,6 +53,7 @@ abstract class BookSite {
 //            "Content-Type": "application/x-www-form-urlencoded"
 //          },
 //          encoding: Encoding.getByName("gbk"),
+//            encoding: Utf8Codec2(),
         );
 //        print("post 请求");
 //        print(response.body);
@@ -590,6 +592,10 @@ abstract class BookSite {
       searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC');
     } else {
       searchUrl = searchUrl.replaceAll('searchKey', '逆天邪神');
+      print('%C4%E6%CC%EC');
+      print("ggggg  ${Uri.encodeComponent('逆天')}");
+      print("ggggg  ${Uri.encodeQueryComponent('逆天1',encoding: Utf8Codec2())}");
+      return [];
 //      searchUrl =
 //          searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
     }
@@ -636,7 +642,7 @@ abstract class BookSite {
       return decodeGbk(response.bodyBytes);
     } else {
       print('默认Utf8编码');
-      return Utf8Codec().decode(response.bodyBytes);
+      return utf8.decode(response.bodyBytes);
 //      return response.body;
     }
   }

@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'dart:typed_data';
 
+import 'package:seek_book/book_site/lib/src/convert.dart';
 import 'package:seek_book/book_site/lib/src/gbk.dart';
 import 'package:seek_book/book_site/lib/src/unicode.dart';
 
@@ -27,7 +28,7 @@ const int unicodeBomCharacterRune = 0xFEFF;
  *     var decoded = utf8.decode([0x62, 0x6c, 0xc3, 0xa5, 0x62, 0xc3, 0xa6,
  *                                0x72, 0x67, 0x72, 0xc3, 0xb8, 0x64]);
  */
-const Utf8Codec utf8 = const Utf8Codec();
+//const Utf8Codec utf8 = const Utf8Codec();
 
 /**
  * A [Utf8Codec] encodes strings to utf-8 code units (bytes) and decodes
@@ -101,14 +102,16 @@ class Utf8Encoder2 extends Converter<String, List<int>> {
     print("```` convert  [$string]  [$start]  [$end]");
     var utf8encoder = new Utf8Encoder();
     List<int> utf8Data = utf8encoder.convert(string, start, end);
-    print("utf8: $utf8Data");
+//    print("utf8: $utf8Data");
     var unicodeData = utf82unicode(utf8Data);
-    print("unicode $unicodeData");
-    print("utf8 ${unicode2utf8(unicodeData)}");
+//    print("unicode $unicodeData");
+//    print("utf8 ${unicode2utf8(unicodeData)}");
     var gbkData = unicode2gbk(unicodeData);
-//    print(gbkData);
-//    return gbkData;
-    return utf8Data;
+    print("gbk $gbkData");
+//    unicodeData = gbk2unicode(gbkData);
+//    print("unicode $unicodeData");
+    return gbkData;
+//    return utf8Data;
   }
 
   /**
@@ -237,47 +240,25 @@ String charToUnicode(int char) {
 List<int> unicode2gbk(List<int> unicodeWordList) {
   List<int> list = [];
 
-  for (int i = 0; i < unicodeWordList.length - 1; i++) {
-    //如果小于127，则为ascii，直接存，否则去表里映射成两个字符
-  };
-
-//  int uni_ind = 0, gbk_ind = 0, uni_num = 0;
-//  int ch;
-//  int word; //unsigned short
-//  int word_pos;
-//  List<int> uni_ptr = new List()..length = gbk_buf.length;
-//
-//  for (; gbk_ind < gbk_buf.length;) {
-//    ch = gbk_buf[gbk_ind];
-//    if (ch > 0x80) {
-//      word = gbk_buf[gbk_ind];
-////      word <<= 8;
-////      word += gbk_buf[gbk_ind + 1];
-////      gbk_ind += 2;
-//      gbk_ind++;
-//      word_pos = word + unicode_first_code;
-//      print("$word_pos   $word");
-////      print(gbkTables[word]);
-//      uni_ptr[uni_ind] = gbkTables[word_pos];
-////      uni_ptr[uni_ind] = gbkTables[word_pos];
-////      if (word >= unicode_first_code &&
-////          word <= unicode_last_code &&
-////          (word_pos < unicode_buf_size)) {
-////        uni_ptr[uni_ind] = gbkTables[word_pos];
-//      uni_ind++;
-//      uni_num++;
-////      }
-//    } else {
-////      gbk_ind++;
-//      uni_ptr[uni_ind] = ch;
-//      uni_ind++;
-//      uni_num++;
+  for (int i = 0; i < unicodeWordList.length; i++) {
+    //映射成两个字符
+    var word = unicodeWordList[i];
+//    if(word<=0x80){
 //    }
-//  }
-//
-//  uni_ptr.length = uni_num;
-//  print(uni_ptr);
-//  return uni_ptr;
+    if (word > 0x80) {
+//      print("$word ${charToUnicode(word)}");
+      word = gbkTables[word - unicode_first_code];
+//      print(charToUnicode(word));
+    }
+    var low = word & 0xFF;
+    var high = word >> 8;
+//    print(charToUnicode(low));
+//    print(charToUnicode(high));
+    if (high != 0) {
+      list.add(high);
+    }
+    list.add(low);
+  }
 
   return list;
 }

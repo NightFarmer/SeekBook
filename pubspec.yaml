@@ -58,6 +58,7 @@ flutter:
    - assets/images/start_read.png
    - assets/images/add_read.png
    - assets/images/change_read.png
+   - assets/file/booksource.json
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

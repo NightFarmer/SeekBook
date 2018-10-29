@@ -6,9 +6,9 @@ import 'dart:convert';
 
 import 'dart:typed_data';
 
-import 'package:seek_book/book_site/lib/src/convert.dart';
-import 'package:seek_book/book_site/lib/src/gbk.dart';
-import 'package:seek_book/book_site/lib/src/unicode.dart';
+import 'package:seek_book/book_site/encoding/src/convert.dart';
+import 'package:seek_book/book_site/encoding/src/gbk.dart';
+import 'package:seek_book/book_site/encoding/src/unicode.dart';
 
 /** The Unicode Replacement character `U+FFFD` (�). */
 const int unicodeReplacementCharacterRune = 0xFFFD;
@@ -133,134 +133,6 @@ class Utf8Encoder2 extends Converter<String, List<int>> {
     print("```` bind   ");
     return super.bind(stream);
   }
-}
-
-///Word array to utf-8
-List<int> unicode2utf8(List<int> wordArray) {
-  // a utf-8 character is 3 bytes
-  List<int> list = new List()..length = wordArray.length * 3;
-  int pos = 0;
-
-  for (int i = 0, c = wordArray.length; i < c; ++i) {
-    int word = wordArray[i];
-    if (word <= 0x7f) {
-      list[pos++] = word;
-    } else if (word >= 0x80 && word <= 0x7ff) {
-      list[pos++] = 0xc0 | ((word >> 6) & 0x1f);
-      list[pos++] = 0x80 | (word & 0x3f);
-    } else if (word >= 0x800 && word < 0xffff) {
-      list[pos++] = 0xe0 | ((word >> 12) & 0x0f);
-      list[pos++] = 0x80 | ((word >> 6) & 0x3f);
-      list[pos++] = 0x80 | (word & 0x3f);
-    } else {
-      //-1
-      list[pos++] = -1;
-    }
-  }
-
-  list.length = pos;
-  return list;
-}
-
-//https://segmentfault.com/a/1190000015282324
-
-//https://blog.csdn.net/bladeandmaster88/article/details/54837338
-// utf8转Unicode
-List<int> utf82unicode(List<int> wordArray) {
-  List<int> list = [];
-  for (int i = 0, c = wordArray.length; i < c; ++i) {
-    int word = wordArray[i];
-    if (word > 0x00 && word <= 0x7F) {
-      list.add(word);
-//      list.add(0);
-    } else if ((word & 0xE0) == 0xC0) {
-      int high = word;
-      ++i;
-      word = wordArray[i];
-      int low = word;
-      if ((low & 0xC0) != 0x80) {
-        return list;
-      }
-      list.add((high << 6) + (low & 0x3F));
-      list.add((high >> 2) & 0x07);
-    } else if ((word & 0xF0) == 0xE0) {
-      int high = word;
-      ++i;
-      int middle = wordArray[i];
-      ++i;
-      int low = wordArray[i];
-      word = wordArray[i];
-      if (((middle & 0xC0) != 0x80) || ((low & 0xC0) != 0x80)) {
-        return list;
-      }
-      var newLow = ((middle & 0x3) << 6) + (low & 0x3F);
-//      list.add(newLow);
-//      var newHigh = (high << 4) + ((middle >> 2) & 0x0F);
-      var newHigh = ((high & 0xF) << 4) + ((middle >> 2) & 0xF);
-//      list.add(newHigh);
-      var value = (newHigh << 8) + newLow;
-      list.add(value);
-//      print(
-//          "$newLow  $newHigh  ${charToUnicode(newHigh)} ${charToUnicode(newLow)} ${charToUnicode(newHigh << 8)}  ${charToUnicode(value)}");
-//      print('${charToUnicode(10<<8)}');
-//      print('${10.toRadixString(16)}');
-//      print('${10.toRadixString(16)}');
-    } else {
-      return list;
-    }
-  }
-//  list.add(0);
-//  list.add(0);
-  return list;
-}
-
-String charToUnicode(int char) {
-  if (char == null || char < 0 || char > 0xfffffffff) {
-    throw new ArgumentError('c: $char');
-  }
-
-  var hex = char.toRadixString(16);
-  var length = hex.length;
-  var count = 0;
-  if (char <= 0xffff) {
-    count = 4;
-  } else {
-    count = 8;
-  }
-
-  for (var i = 0; i < count - length; i++) {
-    hex = '0$hex';
-  }
-
-  return '\\u$hex';
-}
-
-//http://www.52im.net/thread-1693-1-1.html
-//https://blog.csdn.net/tge7618291/article/details/7608510
-List<int> unicode2gbk(List<int> unicodeWordList) {
-  List<int> list = [];
-
-  for (int i = 0; i < unicodeWordList.length; i++) {
-    //映射成两个字符
-    var word = unicodeWordList[i];
-//    if(word<=0x80){
-//    }
-    if (word > 0x80) {
-//      print("$word ${charToUnicode(word)}");
-      word = gbkTables[word - unicode_first_code];
-//      print(charToUnicode(word));
-    }
-    var low = word & 0xFF;
-    var high = word >> 8;
-//    print(charToUnicode(low));
-//    print(charToUnicode(high));
-    if (high != 0) {
-      list.add(high);
-    }
-    list.add(low);
-  }
-
-  return list;
 }
 
 /**

@@ -1,20 +1,13 @@
-import 'dart:convert';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:html/parser.dart';
-import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/book_site/book_site.dart';
 import 'package:seek_book/components/book_img.dart';
 import 'package:seek_book/components/clickable.dart';
 import 'package:seek_book/components/top_bar.dart';
-import 'package:seek_book/main.dart';
 import 'package:seek_book/globals.dart' as Globals;
 import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/screen_adaptation.dart';
 import 'package:seek_book/utils/status_bar.dart';
-import 'package:sqflite/sqflite.dart';
 
 class BookDetailPage extends StatefulWidget {
   final Map bookInfo;
@@ -48,7 +41,7 @@ class _BookDetailState extends State<BookDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    var imgWidth = 80;
+    var imgWidth = dp(80);
     var body = Column(
       children: <Widget>[
         Container(
@@ -69,7 +62,7 @@ class _BookDetailState extends State<BookDetailPage> {
         ),
         BookImg(
           imgUrl: imgUrl,
-          width: dp(80),
+          width: imgWidth,
         ),
         Text('追书状态：$bookActive'),
         GestureDetector(
@@ -207,8 +200,9 @@ class _BookDetailState extends State<BookDetailPage> {
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
     imgUrl = this.bookInfo['imgUrl'];
+    var siteRule = BookSite.findSiteRule(this.bookInfo['siteHost']);
     var bookInfo =
-        await BookSiteKenWen().bookDetail(name, author, url, (exist) {
+        await BookSite().bookDetail(name, author, url, siteRule, (exist) {
       if (exist.length > 0) {
         setState(() {
           bookActive = exist[0]['active'] ?? 0;

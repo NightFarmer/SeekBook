@@ -5,13 +5,13 @@ import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/book_site/book_source.dart';
-import 'package:seek_book/book_site/utf.dart';
+import 'package:seek_book/book_site/gbk.dart';
 import 'package:seek_book/globals.dart' as Globals;
 import 'package:http/http.dart' as http;
 
 import 'package:gbk2utf8/gbk2utf8.dart';
 
-abstract class BookSite {
+class BookSite {
   //最多请求3次，失败则返回失败。
   Future request(String url, [retryTime = 3]) async {
     try {
@@ -153,9 +153,9 @@ abstract class BookSite {
     }
   }
 
-  bookDetail(name, author, url, [onFindExist]) async {
-    var bookSource = BookSource;
-    Map siteRule = bookSource[0];
+  bookDetail(name, author, url, siteRule, [onFindExist]) async {
+//    var bookSource = BookSource;
+//    Map siteRule = bookSource[0];
 
     var database = Globals.database;
 
@@ -168,8 +168,11 @@ abstract class BookSite {
     }
     //===
     print(url);
+    print(siteRule);
+    String bookSourceName = siteRule['bookSourceName'];
     String bookSourceUrl = siteRule['bookSourceUrl'];
     String searchUrl = siteRule['ruleSearchUrl'];
+
     var isGbk = searchUrl.indexOf('|char=gbk') != -1;
 
     http.Response response = await request(url);
@@ -182,6 +185,8 @@ abstract class BookSite {
     });
     bookInfo['url'] = url;
     bookInfo['author'] = author;
+    bookInfo['siteName'] = bookSourceName;
+    bookInfo['siteHost'] = bookSourceUrl;
 
     if (exist.length > 0) {
       bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
@@ -387,6 +392,8 @@ abstract class BookSite {
   parseBookListByRoleInBack(param) async {
     var data = param['data'];
     var siteRule = json.decode(param['siteRule']);
+    String bookSourceName = siteRule['bookSourceName'];
+    String bookSourceUrl = siteRule['bookSourceUrl'];
     String ruleSearchUrl = siteRule['ruleSearchUrl'];
     var doc = parse(data);
     List chapterItemEleList = parseWholeRole(doc, siteRule['ruleSearchList']);
@@ -448,6 +455,8 @@ abstract class BookSite {
             return null;
           }
           String author = authorResult[0];
+          author = author.replaceAll('作者：', '');
+          author = author.replaceAll('作者:', '');
 //          print('作者：$author');
           var lastChapterResult =
               parseWholeRole(item, siteRule['ruleSearchLastChapter']);
@@ -462,6 +471,8 @@ abstract class BookSite {
             'lastChapter': lastChapter.trim(),
             'kind': kind.trim(),
             'imgUrl': imgUrl.trim(),
+            'siteName': bookSourceName,
+            'siteHost': bookSourceUrl,
           };
         })
         .where((it) => it != null)
@@ -469,6 +480,14 @@ abstract class BookSite {
     print(bookList);
     print("解析到N本书 ${bookList.length}");
     return jsonEncode(bookList);
+  }
+
+  static Map findSiteRule(siteHost) {
+    for (int i = 0; i < BookSource.length; i++) {
+      if (BookSource[i]["bookSourceUrl"] == siteHost) {
+        return BookSource[i];
+      }
+    }
   }
 
   parseBookDetailByRoleInBack(param) async {
@@ -525,7 +544,7 @@ abstract class BookSite {
       "author": "不重要,使用列表书名",
       "imgUrl": imgUrl,
 //      "url": url,
-      "site": bookSourceUrl,
+//      "site": bookSourceUrl,
 //      "updateTime": currentUpdateTime,
       "currentPageIndex": 0,
       "currentChapterIndex": 0,
@@ -546,7 +565,7 @@ abstract class BookSite {
     return bookContentResult;
   }
 
-  searchBook(String text) async {
+  searchBook(String text, siteRule) async {
 //    var bookSource =
 //        BookSource.where((it) => jsonEncode(it).indexOf('|char=gbk') == -1)
 //            .toList();
@@ -558,7 +577,7 @@ abstract class BookSite {
     // 51 gbk的post问题
     // 20 书源异常
     // 1 302调整到书籍详情了，手动默认章节地址为当前地址
-    Map siteRule = bookSource[0];
+//    Map siteRule = bookSource[0];
     //一共54个书源
     print(siteRule);
 
@@ -628,12 +647,24 @@ abstract class BookSite {
       return decodeGbk(response.bodyBytes);
     } else {
       print('默认Utf8编码');
-      return utf8.decode(response.bodyBytes);
+      var result;
+      try {
+        result = utf8.decode(response.bodyBytes);
+      } catch (e) {
+        print(e);
+        try {
+          print('Utf8解码失败，使用GBK解码');
+          result = decodeGbk(response.bodyBytes);
+        } catch (e) {
+          print(e);
+        }
+      }
+      return result;
 //      return response.body;
     }
   }
 
-  Future<String> parseChapter(String chapterUrl) async {
+  Future<String> parseChapter(String chapterUrl, siteRule) async {
     var bookSource = BookSource;
     Map siteRule = bookSource[0];
     var ruleBookContent = siteRule['ruleBookContent'];

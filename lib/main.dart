@@ -40,13 +40,16 @@ class MyAppState extends State<MyApp> {
 //     Delete the database
 //    await deleteDatabase(path);
 
+//    'siteName': bookSourceName,
+//    'siteHost': bookSourceUrl,
+
     var database = await openDatabase(
       path,
       version: Globals.db_version,
       onCreate: (Database db, int version) async {
         // When creating the db, create the table
         await db.execute(
-          "CREATE TABLE Book (id INTEGER PRIMARY KEY, name TEXT, author TEXT, chapters Text, url Text, site Text, updateTime long, imgUrl Text, currentPageIndex INTEGER,currentChapterIndex INTEGER,active int,hasNew int)",
+          "CREATE TABLE Book (id INTEGER PRIMARY KEY, name TEXT, author TEXT, chapters Text, url Text,siteHost Text, siteName Text, updateTime long, imgUrl Text, currentPageIndex INTEGER,currentChapterIndex INTEGER,active int,hasNew int)",
         );
         await db
             .execute('create table chapter (id String primary key, text text)');

@@ -3,11 +3,9 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:html/parser.dart';
-import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/book_site/book_site.dart';
 import 'package:seek_book/components/read_option_layer.dart';
 import 'package:seek_book/components/read_pager_item.dart';
 import 'package:seek_book/components/text_canvas.dart';
@@ -174,7 +172,8 @@ class ReadPagerState extends State<ReadPager> {
       content = existData[0]['text'];
     } else {
       try {
-        content = await BookSiteKenWen().parseChapter(url);
+        var siteRule = BookSite.findSiteRule(widget.bookInfo['siteHost']);
+        content = await BookSite().parseChapter(url, siteRule);
         loadingMap.remove(chapterIndex); //并发以完成，移除加载状态
       } catch (e) {
         print(e);

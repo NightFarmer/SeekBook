@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
-import 'package:seek_book/book_site/kenwen.dart';
+import 'package:seek_book/book_site/book_site.dart';
 import 'package:seek_book/components/book_img.dart';
 import 'package:seek_book/pages/read_page.dart';
 import 'package:seek_book/utils/status_bar.dart';
@@ -63,7 +63,7 @@ class MyBookListState extends State<MyBookList> {
 //      book['url'],
 //    );
 //    return;
-    var bookNew = await BookSiteKenWen().bookDetail(
+    var bookNew = await BookSite().bookDetail(
       book['name'],
       book['author'],
       book['url'],

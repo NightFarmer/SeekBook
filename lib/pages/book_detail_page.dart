@@ -94,6 +94,7 @@ class _BookDetailState extends State<BookDetailPage> {
             children: <Widget>[
               Expanded(
                 child: Clickable(
+                  onClick: toggleToSave,
                   child: Container(
                     child: Column(
                       children: <Widget>[
@@ -104,7 +105,7 @@ class _BookDetailState extends State<BookDetailPage> {
                           color: Color(0xFF333333),
                         ),
                         Text(
-                          '加入追书', //已加入追书
+                          "${bookActive == 1 ? '取消追书' : '加入追书'}", //已加入追书
                           style: TextStyle(
                             color: Color(0xFF333333),
                             fontSize: dp(14),
@@ -121,6 +122,12 @@ class _BookDetailState extends State<BookDetailPage> {
                   padding: EdgeInsets.symmetric(vertical: dp(8)),
                   color: Theme.of(context).primaryColor,
                   child: Clickable(
+                    onClick: () {
+                      startReadFromChapter(
+                        bookInfo["currentChapterIndex"],
+                        bookInfo["currentPageIndex"],
+                      );
+                    },
                     child: Container(
                       child: Column(
                         children: <Widget>[
@@ -188,33 +195,14 @@ class _BookDetailState extends State<BookDetailPage> {
     index = orderBy == 0 ? index : (chapterList.length - 1 - index);
     var item = chapterList[index];
     return GestureDetector(
-      onTap: () async {
-        await Navigator.push(
-          context,
-          CupertinoPageRoute(
-            builder: (context) => ReadPage(bookInfo: {
-                  'id': bookInfo['id'],
-                  'name': bookInfo['name'],
-                  'author': bookInfo['author'],
-                  'url': bookInfo['url'],
-                  'updateTime': bookInfo['updateTime'],
-                  'imgUrl': bookInfo['imgUrl'],
-//                  'chapterList': json.decode(bookInfo['chapters']),
-                  'chapterList': bookInfo['chapterList'],
-                  'site': bookInfo['site'],
-                  'currentPageIndex': 0,
-                  'currentChapterIndex': index,
-                }),
-          ),
-        );
-        StatusBar.show();
-//        loadData();
+      onTap: () {
+        startReadFromChapter(index);
       },
       child: Text("${item['title']}"),
     );
   }
 
-  void loadData() async {
+  void loadData([local = false]) async {
     var name = this.bookInfo['name'];
     var author = this.bookInfo['author'];
     var url = this.bookInfo['url'];
@@ -225,6 +213,9 @@ class _BookDetailState extends State<BookDetailPage> {
         setState(() {
           bookActive = exist[0]['active'] ?? 0;
           imgUrl = exist[0]['imgUrl'];
+          this.bookInfo["currentPageIndex"] = exist[0]['currentPageIndex'];
+          this.bookInfo["currentChapterIndex"] =
+              exist[0]['currentChapterIndex'];
         });
       } else {
         setState(() {
@@ -232,6 +223,7 @@ class _BookDetailState extends State<BookDetailPage> {
         });
       }
     });
+    if (local) return;
 
     if (!mounted) return;
     setState(() {
@@ -240,6 +232,7 @@ class _BookDetailState extends State<BookDetailPage> {
         this.updateTime = bookInfo['updateTime'];
 //        this.chapterList = json.decode(bookInfo['chapters']);
         this.chapterList = bookInfo['chapterList'];
+        bookInfo['author'] = author;
         this.bookInfo = bookInfo;
         if (chapterList == null || chapterList.length == 0) {
           showSnack("书籍章节数量为0，请尝试切换书源。");
@@ -253,6 +246,31 @@ class _BookDetailState extends State<BookDetailPage> {
 //    var encode = json.encode(chapterList);
 //    print(encode);
 //    print(json.decode(encode));
+  }
+
+  startReadFromChapter([chapterIndex = 0, pageIndex = 0]) async {
+    await Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => ReadPage(
+              bookInfo: {
+                'id': bookInfo['id'],
+                'name': bookInfo['name'],
+                'author': bookInfo['author'],
+                'url': bookInfo['url'],
+                'updateTime': bookInfo['updateTime'],
+                'imgUrl': bookInfo['imgUrl'],
+//                  'chapterList': json.decode(bookInfo['chapters']),
+                'chapterList': bookInfo['chapterList'],
+                'site': bookInfo['site'],
+                'currentPageIndex': pageIndex,
+                'currentChapterIndex': chapterIndex,
+              },
+            ),
+      ),
+    );
+    StatusBar.show();
+    loadData(true);
   }
 
   void toggleToSave() async {
@@ -271,6 +289,7 @@ class _BookDetailState extends State<BookDetailPage> {
         where: 'name=? and author=?',
         whereArgs: [name, author],
       );
+      print('name $name, author $author, newState $newState');
       setState(() {
         bookActive = newState;
       });

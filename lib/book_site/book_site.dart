@@ -1,19 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:isolate';
 
 import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
-import 'package:path/path.dart';
 import 'package:seek_book/book_site/book_source.dart';
-import 'package:seek_book/book_site/kenwen.dart';
 import 'package:seek_book/book_site/utf.dart';
 import 'package:seek_book/globals.dart' as Globals;
-import 'package:sqflite/sqflite.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:gbk2utf8/gbk2utf8.dart';
 
 abstract class BookSite {
@@ -140,14 +135,6 @@ abstract class BookSite {
       var functionName = data['functionName'];
       var param = data['param'];
       switch (functionName) {
-        case 'parseBookDetail':
-          var result = await instance.parseBookDetail(param);
-          replyTo.send(result);
-          return;
-        case 'parseChapterText':
-          var result = await instance.parseChapterText(param);
-          replyTo.send(result);
-          return;
         case 'parseBookListByRoleInBack':
           var result = await instance.parseBookListByRoleInBack(param);
           replyTo.send(result);
@@ -155,15 +142,16 @@ abstract class BookSite {
         case 'parseBookDetailByRoleInBack':
           var result = await instance.parseBookDetailByRoleInBack(param);
           replyTo.send(result);
+          return;
+        case 'parseChapterByRoleInBack':
+          var result = await instance.parseChapterByRoleInBack(param);
+          replyTo.send(result);
+          return;
       }
       replyTo.send(null);
       return;
     }
   }
-
-//  bookDetail(name, author, siteHost, url, [onFindExist]) async {
-//
-//  }
 
   bookDetail(name, author, url, [onFindExist]) async {
     var bookSource = BookSource;
@@ -188,147 +176,36 @@ abstract class BookSite {
     var data = requestBody2Utf8(response, isGbk);
 //    print(data);
 
-    var bookInfo = await runOnIsoLate(this, 'parseBookDetailByRoleInBack', {
+    Map bookInfo = await runOnIsoLate(this, 'parseBookDetailByRoleInBack', {
       'data': data,
       'siteRule': json.encode(siteRule),
     });
+    bookInfo['url'] = url;
+    bookInfo['author'] = author;
+
+    if (exist.length > 0) {
+      bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
+      bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
+      print("更新");
+//      bookInfo["hasNew"] = 1;
+      await database.update(
+        'Book',
+        {
+          "chapters": bookInfo["chapters"],
+//          "hasNew": 1,
+        },
+        where: "name=? and author=?",
+        whereArgs: [name, author],
+      );
+    } else {
+      print("插入");
+      var chapterList = bookInfo['chapterList'];
+      bookInfo.remove('chapterList');
+      await database.insert('Book', bookInfo);
+      bookInfo["chapterList"] = chapterList;
+    }
     return bookInfo;
-
-//    print("请求书籍详情  $name");
-//    var name = this.bookInfo['name'];
-//    var author = this.bookInfo['author'];
-//    var url = this.bookInfo['url'];
-
-//    var database = Globals.database;
-//
-//    var exist = await database.rawQuery(
-//      'select * from Book where name=? and author=?',
-//      [name, author],
-//    );
-//    if (onFindExist != null) {
-//      onFindExist(exist);
-//    }
-//
-////    print("书籍详情网络已返回0  $name  $url");
-//    Dio dio = new Dio();
-//    Response response;
-//    try {
-//      response = await dio.get(
-//        url,
-//        options: Options(
-//          connectTimeout: 5000,
-//          receiveTimeout: 5000,
-//        ),
-//      );
-//    } catch (e) {
-//      print(e);
-//      return null;
-//    }
-//    var bookDetail = await runOnIsoLate(this, 'parseBookDetail', {
-//      'data': response.data,
-//      'url': url,
-//    });
-//    if (bookDetail == null) {
-//      return null;
-//    }
-//    var imgUrl = bookDetail['imgUrl'];
-//    var currentUpdateTime = bookDetail['updateTime'];
-//
-////    String chapters;
-//    Map<String, dynamic> bookInfo = {
-//      "name": name,
-//      "author": author,
-//      "imgUrl": imgUrl,
-//      "url": url,
-//      "site": 'www',
-//      "updateTime": currentUpdateTime,
-//      "currentPageIndex": 0,
-//      "currentChapterIndex": 0,
-//      "active": 0,
-//      "chapterList": [],
-//      "chapters": '[]',
-//      "hasNew": 0,
-//    };
-//    if (exist.length > 0) {
-//      bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
-//      bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
-//    }
-//    if (exist.length > 0 && currentUpdateTime == exist[0]["updateTime"]) {
-//      bookInfo = {
-//        "name": exist[0]["name"],
-//        "author": exist[0]["author"],
-//        "imgUrl": exist[0]["imgUrl"],
-//        "url": exist[0]["url"],
-//        "site": exist[0]["site"],
-//        "updateTime": exist[0]["updateTime"],
-//        "chapters": exist[0]["chapters"],
-//        "chapterList": exist[0]["chapters"] == null
-//            ? []
-//            : json.decode(exist[0]["chapters"]),
-//        "currentPageIndex": exist[0]["currentPageIndex"],
-//        "currentChapterIndex": exist[0]["currentChapterIndex"],
-//        "active": exist[0]["active"],
-//        "hasNew": exist[0]["hasNew"],
-//      };
-//      print("存在相同时间戳缓存");
-//    } else {
-////      List chapterList = parseChapterList(document, url);
-////      chapters = json.encode(chapterList);
-////      List chapterList = bookDetail['chapterList'];
-//      bookInfo['chapters'] = bookDetail['chapters'];
-//      bookInfo['chapterList'] = bookDetail['chapterList'];
-//    }
-//
-//    await database.transaction((txn) async {
-//      if (exist.length == 0) {
-//        bookInfo = {
-//          "name": name,
-//          "author": author,
-//          "imgUrl": imgUrl,
-//          "url": url,
-//          "site": 'www',
-//          "updateTime": currentUpdateTime,
-//          "chapters": bookDetail['chapters'],
-//          "currentPageIndex": 0,
-//          "currentChapterIndex": 0,
-//          "active": 0,
-//          "hasNew": 0,
-//        };
-//        print("插入");
-//        await txn.insert('Book', bookInfo);
-//        bookInfo["chapterList"] = bookDetail['chapterList'];
-//      } else if (currentUpdateTime != exist[0]["updateTime"]) {
-//        print("更新 ${currentUpdateTime}");
-//        bookInfo["imgUrl"] = imgUrl;
-//        bookInfo["updateTime"] = currentUpdateTime;
-//        bookInfo["hasNew"] = 1;
-//        await txn.update(
-//          'Book',
-//          {
-//            "imgUrl": imgUrl,
-//            "updateTime": currentUpdateTime,
-//            "chapters": bookInfo["chapters"],
-//            "hasNew": 1,
-//          },
-//          where: "name=? and author=?",
-//          whereArgs: [name, author],
-//        );
-//      }
-//    });
-//    return bookInfo;
   }
-
-//  searchBook(String text);
-
-  Future<ChapterText> parseChapterText(param);
-
-  List<Map> parseChapterList(Document document, String bookUrl);
-
-  String parseBookImage(Document document, String bookUrl);
-
-  int parseUpdateTime(Document document, String bookUrl);
-
-  bool isBookDetailEmpty(String data);
 
   parseOneRole(doc, String role) {
     var roleList = role.split('|');
@@ -347,7 +224,7 @@ abstract class BookSite {
     return result;
   }
 
-  // 现在只支持一级，后续扩展支持级联多级 如class.item-pic.tag.p.0@tag.i.0
+// 现在只支持一级，后续扩展支持级联多级 如class.item-pic.tag.p.0@tag.i.0
   _parseOneRole(doc, String role) {
     List<String> words = role.split('.');
     String type = words[0];
@@ -641,7 +518,7 @@ abstract class BookSite {
 
     Map<String, dynamic> bookInfo = {
       "name": name,
-      "author": "不重要使用列表书名",
+      "author": "不重要,使用列表书名",
       "imgUrl": imgUrl,
 //      "url": url,
       "site": bookSourceUrl,
@@ -654,6 +531,15 @@ abstract class BookSite {
       "hasNew": 0,
     };
     return bookInfo;
+  }
+
+  parseChapterByRoleInBack(param) {
+    var data = param['data'];
+    var siteRule = json.decode(param['siteRule']);
+    var doc = parse(data);
+    var ruleBookContent = siteRule['ruleBookContent'];
+    var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
+    return bookContentResult;
   }
 
   searchBook(String text) async {
@@ -750,48 +636,27 @@ abstract class BookSite {
     var isGbk = searchUrl.indexOf('|char=gbk') != -1;
     String data = requestBody2Utf8(response, isGbk);
 //    print(data);
-    var doc = parse(data);
-    var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
+
+    String bookContentResult =
+        await runOnIsoLate(this, 'parseChapterByRoleInBack', {
+      'data': data,
+      'siteRule': json.encode(siteRule),
+      'queryUrl': searchUrl,
+    });
+//    var doc = parse(data);
+//    var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
+    await Globals.database.transaction((txn) async {
+      List<Map> existData = await txn
+          .rawQuery('select text from chapter where id = ?', [chapterUrl]);
+      if (existData.length > 0) {
+        return existData[0]['text'];
+      }
+      await txn.insert('chapter', {
+        "id": chapterUrl,
+        "text": bookContentResult,
+      });
+    });
     return bookContentResult;
-
-//    Dio dio = new Dio();
-////    var url = 'http://www.kenwen.com/cview/241/241355/1371839.html';
-//    Response response = await dio.get(chapterUrl);
-//    ChapterText chapterText = await runOnIsoLate(this, 'parseChapterText', {
-//      'chapterUrl': chapterUrl,
-//      'data': response.data,
-//    });
-//    if (!chapterText.valid) {
-//      return chapterText.text;
-//    }
-//    await Globals.database.transaction((txn) async {
-//      List<Map> existData = await txn
-//          .rawQuery('select text from chapter where id = ?', [chapterUrl]);
-//      if (existData.length > 0) {
-//        return existData[0]['text'];
-//      }
-//      await txn.insert('chapter', {
-//        "id": chapterUrl,
-//        "text": chapterText.text,
-//      });
-//    });
-//    return chapterText.text;
-  }
-
-  Future<Map> parseBookDetail(param) async {
-    var data = param['data'];
-    if (isBookDetailEmpty(data)) return null;
-    var document = parse(data);
-    var imgUrl = parseBookImage(document, param['url']);
-    var updateTime = parseUpdateTime(document, param['url']);
-    var chapterList = parseChapterList(document, param['url']);
-
-    return {
-      "updateTime": updateTime,
-      "imgUrl": imgUrl,
-      "chapters": jsonEncode(chapterList),
-      "chapterList": chapterList,
-    };
   }
 }
 

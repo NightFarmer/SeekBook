@@ -187,12 +187,16 @@ abstract class BookSite {
       bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
       bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
       print("更新");
-//      bookInfo["hasNew"] = 1;
+      bookInfo["hasNew"] = exist[0];
+      if (bookInfo['hasNew'] != 1 &&
+          bookInfo["chapters"] != exist[0]["chapters"]) {
+        bookInfo['hasNew'] = 1;
+      }
       await database.update(
         'Book',
         {
           "chapters": bookInfo["chapters"],
-//          "hasNew": 1,
+          "hasNew": bookInfo['hasNew'],
         },
         where: "name=? and author=?",
         whereArgs: [name, author],
@@ -564,10 +568,14 @@ abstract class BookSite {
 //    searchUrl = searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
     if (isGbk) {
 //      searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC');
-      searchUrl = searchUrl.replaceAll('searchKey',
-          '${Uri.encodeQueryComponent('修真聊天群', encoding: Utf8Codec2())}');
+      searchUrl = searchUrl.replaceAll(
+          'searchKey',
+          '${Uri.encodeQueryComponent(
+            text,
+            encoding: Utf8Codec2(),
+          )}');
     } else {
-      searchUrl = searchUrl.replaceAll('searchKey', '逆天邪神');
+      searchUrl = searchUrl.replaceAll('searchKey', text);
 //      print('%C4%E6%CC%EC');
 //      print("ggggg  ${Uri.encodeComponent('逆天')}");
 //      print("ggggg  ${Uri.encodeQueryComponent('逆天1',encoding: Utf8Codec2())}");

@@ -334,6 +334,8 @@ class MyBookListState extends State<MyBookList> {
         'currentChapterIndex': it['currentChapterIndex'],
         'active': it['active'],
         'hasNew': it['hasNew'],
+        'siteName': it['siteName'],
+        'siteHost': it['siteHost'],
       };
     }).toList();
     setState(() {

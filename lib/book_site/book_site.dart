@@ -170,16 +170,12 @@ class BookSite {
     print(siteRule);
     String bookSourceName = siteRule['bookSourceName'];
     String bookSourceUrl = siteRule['bookSourceUrl'];
-    String searchUrl = siteRule['ruleSearchUrl'];
-
-    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
-
-    http.Response response = await request(url);
-    var data = requestBody2Utf8(response, isGbk);
 //    print(data);
 
     Map bookInfo = await runOnIsoLate(this, 'parseBookDetailByRoleInBack', {
-      'data': data,
+//      'data': data,
+      'url': url,
+//      'dataMulu': dataMulu,
       'siteRule': json.encode(siteRule),
     });
     bookInfo['url'] = url;
@@ -373,7 +369,11 @@ class BookSite {
               String nodesHtml = tempItem.innerHtml;
               String content = nodesHtml;
               content = content
-                  .replaceAll('<script>chaptererror();</script>', '')
+//                  .replaceAll('<script>chaptererror();</script>', '')
+                  .replaceAll('<p>', '')
+                  .replaceAll('</p>', '')
+                  .replaceAll('<P>', '')
+                  .replaceAll('</P>', '')
                   .split("<br>")
                   .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
                   .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
@@ -389,8 +389,45 @@ class BookSite {
   }
 
   parseBookListByRoleInBack(param) async {
-    var data = param['data'];
+    var text = param['text'];
     var siteRule = json.decode(param['siteRule']);
+
+    print(siteRule);
+
+    String searchUrl = siteRule['ruleSearchUrl'];
+
+    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+//    searchUrl = searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
+    if (isGbk) {
+//      searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC');
+      searchUrl = searchUrl.replaceAll(
+          'searchKey',
+          '${Uri.encodeQueryComponent(
+            text,
+            encoding: Utf8Codec2(),
+          )}');
+    } else {
+      searchUrl = searchUrl.replaceAll('searchKey', text);
+//      print('%C4%E6%CC%EC');
+//      print("ggggg  ${Uri.encodeComponent('逆天')}");
+//      print("ggggg  ${Uri.encodeQueryComponent('逆天1',encoding: Utf8Codec2())}");
+//      return [];
+//      searchUrl =
+//          searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
+    }
+//    searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC%D0%B0%C9%F1');
+    searchUrl = searchUrl.replaceAll('searchPage-1', '0');
+    searchUrl = searchUrl.replaceAll('searchPage', '0');
+    searchUrl = searchUrl.replaceAll('|char=gbk', '');
+    print(searchUrl);
+    print(searchUrl.replaceAll('@', '?'));
+    searchUrl = searchUrl.replaceAll('@', '?');
+    http.Response response = await request(searchUrl, 5);
+//    var data = response.data;
+    print('返回的response ${response}');
+    var data = '';
+    data = requestBody2Utf8(response, isGbk);
+
     String bookSourceName = siteRule['bookSourceName'];
     String bookSourceUrl = siteRule['bookSourceUrl'];
     String ruleSearchUrl = siteRule['ruleSearchUrl'];
@@ -490,13 +527,39 @@ class BookSite {
   }
 
   parseBookDetailByRoleInBack(param) async {
-    var data = param['data'];
+//    var data = param['data'];
+    var url = param['url'];
     var siteRule = json.decode(param['siteRule']);
-    var doc = parse(data);
 
+    String bookSourceName = siteRule['bookSourceName'];
     String bookSourceUrl = siteRule['bookSourceUrl'];
-//    String searchUrl = siteRule['ruleSearchUrl'];
-//    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+    String searchUrl = siteRule['ruleSearchUrl'];
+    String ruleChapterUrl = siteRule['ruleChapterUrl'];
+
+    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+
+    http.Response response = await request(url);
+    var data = requestBody2Utf8(response, isGbk);
+
+    var doc = parse(data);
+    var chapterListDoc = doc;
+
+    var dataMulu;
+    print('ruleChapterUrl, ${ruleChapterUrl}');
+    if (ruleChapterUrl != null && ruleChapterUrl.isNotEmpty) {
+      List muluResult = parseWholeRole(doc, ruleChapterUrl);
+      if (muluResult.length > 0) {
+        String chapterListUrl = muluResult[0];
+        if (chapterListUrl != null) {
+          if (chapterListUrl.indexOf('http') == -1) {
+            chapterListUrl = Uri.parse(url).origin + chapterListUrl;
+          }
+          var response = await request(chapterListUrl);
+          var data2 = requestBody2Utf8(response, isGbk);
+          chapterListDoc = parse(data2);
+        }
+      }
+    }
 
     String ruleChapterList = siteRule['ruleChapterList'];
     String ruleBookName = siteRule['ruleBookName'];
@@ -516,13 +579,23 @@ class BookSite {
 //    if (authorResult.length > 0) {
 //      author = authorResult[0];
 //    }
-    List chapterListDocs = parseWholeRole(doc, ruleChapterList);
+    List chapterListDocs = parseWholeRole(chapterListDoc, ruleChapterList);
     print('章节节点数量: ${chapterListDocs.length}');
     List chapterList = [];
     chapterListDocs.forEach((item) {
-      var chapterName = parseWholeRole(item, ruleChapterName)[0];
+      var chapterNameResult = parseWholeRole(item, ruleChapterName);
+      if (chapterNameResult.length == 0) {
+        print('章节名解析失败， 跳过');
+        return;
+      }
+      var chapterName = chapterNameResult[0];
 //      print(chapterName);
-      String contentUrl = parseWholeRole(item, ruleContentUrl)[0];
+      var contentUrlResult = parseWholeRole(item, ruleContentUrl);
+      if (contentUrlResult.length == 0) {
+        print('章节地址解析失败， 跳过');
+        return;
+      }
+      String contentUrl = contentUrlResult[0];
       if (contentUrl.indexOf('http') == -1) {
         contentUrl = bookSourceUrl + contentUrl;
       }
@@ -555,9 +628,17 @@ class BookSite {
     return bookInfo;
   }
 
-  parseChapterByRoleInBack(param) {
-    var data = param['data'];
+  parseChapterByRoleInBack(param) async {
+    var chapterUrl = param['chapterUrl'];
     var siteRule = json.decode(param['siteRule']);
+
+    http.Response response = await request(chapterUrl);
+
+    String searchUrl = siteRule['ruleSearchUrl'];
+    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+    String data = requestBody2Utf8(response, isGbk);
+
+    data = data.replaceAll(new RegExp('<script.*</script>'), '');
     var doc = parse(data);
     var ruleBookContent = siteRule['ruleBookContent'];
     var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
@@ -578,54 +659,12 @@ class BookSite {
     // 1 302调整到书籍详情了，手动默认章节地址为当前地址
 //    Map siteRule = bookSource[0];
     //一共54个书源
-    print(siteRule);
-
-    String searchUrl = siteRule['ruleSearchUrl'];
-
-    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
-//    searchUrl = searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
-    if (isGbk) {
-//      searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC');
-      searchUrl = searchUrl.replaceAll(
-          'searchKey',
-          '${Uri.encodeQueryComponent(
-            text,
-            encoding: Utf8Codec2(),
-          )}');
-    } else {
-      searchUrl = searchUrl.replaceAll('searchKey', text);
-//      print('%C4%E6%CC%EC');
-//      print("ggggg  ${Uri.encodeComponent('逆天')}");
-//      print("ggggg  ${Uri.encodeQueryComponent('逆天1',encoding: Utf8Codec2())}");
-//      return [];
-//      searchUrl =
-//          searchUrl.replaceAll('searchKey', Uri.encodeComponent('逆天邪神'));
-    }
-//    searchUrl = searchUrl.replaceAll('searchKey', '%C4%E6%CC%EC%D0%B0%C9%F1');
-    searchUrl = searchUrl.replaceAll('searchPage-1', '0');
-    searchUrl = searchUrl.replaceAll('searchPage', '0');
-    searchUrl = searchUrl.replaceAll('|char=gbk', '');
-    print(searchUrl);
-    print(searchUrl.replaceAll('@', '?'));
-    searchUrl = searchUrl.replaceAll('@', '?');
-    http.Response response = await request(searchUrl, 5);
-//    var data = response.data;
-    print('返回的response ${response}');
-    var data = '';
-    data = requestBody2Utf8(response, isGbk);
-//    print(data);
-//    print(response);
-//    print(response.runtimeType);
-//    print(response.data);
-//    print(gbk2utf8(response.data));
-//    String responseBody = await response.data.transform(GbkDecoder(allowMalformed: true)).join();
-//    print(responseBody);
+//    print(siteRule);
 
     String bookListJSON =
         await runOnIsoLate(this, 'parseBookListByRoleInBack', {
-      'data': data,
+      'text': text,
       'siteRule': json.encode(siteRule),
-      'queryUrl': searchUrl,
     });
     return json.decode(bookListJSON);
   }
@@ -659,30 +698,15 @@ class BookSite {
         }
       }
       return result;
-//      return response.body;
     }
   }
 
   Future<String> parseChapter(String chapterUrl, siteRule) async {
-    var bookSource = BookSource;
-    Map siteRule = bookSource[0];
-//    var ruleBookContent = siteRule['ruleBookContent'];
-    print(chapterUrl);
-    http.Response response = await request(chapterUrl);
-
-    String searchUrl = siteRule['ruleSearchUrl'];
-    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
-    String data = requestBody2Utf8(response, isGbk);
-//    print(data);
-
     String bookContentResult =
         await runOnIsoLate(this, 'parseChapterByRoleInBack', {
-      'data': data,
+      'chapterUrl': chapterUrl,
       'siteRule': json.encode(siteRule),
-      'queryUrl': searchUrl,
     });
-//    var doc = parse(data);
-//    var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
     await Globals.database.transaction((txn) async {
       List<Map> existData = await txn
           .rawQuery('select text from chapter where id = ?', [chapterUrl]);
@@ -698,7 +722,3 @@ class BookSite {
   }
 }
 
-class ChapterText {
-  String text;
-  bool valid = true;
-}

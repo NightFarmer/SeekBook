@@ -207,6 +207,8 @@ class _BookDetailState extends State<BookDetailPage> {
         setState(() {
           bookActive = exist[0]['active'] ?? 0;
           imgUrl = exist[0]['imgUrl'];
+//          this.bookInfo["siteName"] = exist[0]['siteName'];
+//          this.bookInfo["siteHost"] = exist[0]['siteHost'];
           this.bookInfo["currentPageIndex"] = exist[0]['currentPageIndex'];
           this.bookInfo["currentChapterIndex"] =
               exist[0]['currentChapterIndex'];
@@ -220,6 +222,7 @@ class _BookDetailState extends State<BookDetailPage> {
     if (local) return;
 
     if (!mounted) return;
+    print("详情页，，， ${this.bookInfo["siteHost"]}");
     setState(() {
       if (bookInfo != null) {
         this.imgUrl = bookInfo['imgUrl'];
@@ -256,7 +259,8 @@ class _BookDetailState extends State<BookDetailPage> {
                 'imgUrl': bookInfo['imgUrl'],
 //                  'chapterList': json.decode(bookInfo['chapters']),
                 'chapterList': bookInfo['chapterList'],
-                'site': bookInfo['site'],
+                'siteName': bookInfo['siteName'],
+                'siteHost': bookInfo['siteHost'],
                 'currentPageIndex': pageIndex,
                 'currentChapterIndex': chapterIndex,
               },

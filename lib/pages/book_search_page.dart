@@ -237,16 +237,18 @@ class _BookSearchPageState extends State<BookSearchPage> {
 
     if (_controller.text.isNotEmpty) {
       var bookSource = BookSource;
-      bookSource.forEach((siteRule) {
+      bookSource.forEach((siteRule) async {
         BookSite().searchBook(_controller.text, siteRule).then((result) {
           appendResult(result);
         });
+        await Future.delayed(Duration(milliseconds: 300));
       });
     } else {
       var bookSource = BookSource;
+//      var bookSource = [BookSource[BookSource.length-1]];
       bookSource.forEach((siteRule) {
-//        BookSite().searchBook("最强装逼", siteRule).then((result) {
-        BookSite().searchBook("大王饶命", siteRule).then((result) {
+        BookSite().searchBook("最强装逼", siteRule).then((result) {
+//        BookSite().searchBook("大王饶命", siteRule).then((result) {
 //        BookSite().searchBook("全球高武", siteRule).then((result) {
           appendResult(result);
         });

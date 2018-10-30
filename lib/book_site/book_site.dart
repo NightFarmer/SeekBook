@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart';
 import 'package:seek_book/book_site/book_source.dart';
@@ -19,7 +18,7 @@ class BookSite {
         return null;
       }
       print("request");
-      Dio dio = new Dio();
+//      Dio dio = new Dio();
 //      Response response;
       http.Response response;
       if (url.indexOf('@') != -1) {
@@ -248,11 +247,11 @@ class BookSite {
 //        print('找 class ${doc.querySelectorAll('.bd.booklist-subject')}');
         break;
       case 'tag':
-        eleList = doc.querySelectorAll('${typeValue}');
+        eleList = doc.querySelectorAll('$typeValue');
 //        print('找 tag ${typeValue}  $eleList ${eleList[0].innerHtml}'  );
         break;
       case 'id':
-        eleList = doc.querySelectorAll('#${typeValue}');
+        eleList = doc.querySelectorAll('#$typeValue');
         break;
       case 'children':
         return doc.children;
@@ -466,7 +465,7 @@ class BookSite {
           }
           return {
             'name': name.trim(),
-            'url': url.trim(),
+            'url': url == null ? '' : url.trim(),
             'author': author.trim(),
             'lastChapter': lastChapter.trim(),
             'kind': kind.trim(),
@@ -482,7 +481,7 @@ class BookSite {
     return jsonEncode(bookList);
   }
 
-  static Map findSiteRule(siteHost) {
+  static findSiteRule(siteHost) {
     for (int i = 0; i < BookSource.length; i++) {
       if (BookSource[i]["bookSourceUrl"] == siteHost) {
         return BookSource[i];
@@ -496,12 +495,12 @@ class BookSite {
     var doc = parse(data);
 
     String bookSourceUrl = siteRule['bookSourceUrl'];
-    String searchUrl = siteRule['ruleSearchUrl'];
-    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
+//    String searchUrl = siteRule['ruleSearchUrl'];
+//    var isGbk = searchUrl.indexOf('|char=gbk') != -1;
 
     String ruleChapterList = siteRule['ruleChapterList'];
     String ruleBookName = siteRule['ruleBookName'];
-    String ruleBookAuthor = siteRule['ruleBookAuthor'];
+//    String ruleBookAuthor = siteRule['ruleBookAuthor'];
     String ruleChapterName = siteRule['ruleChapterName'];
     String ruleContentUrl = siteRule['ruleContentUrl'];
     String ruleCoverUrl = siteRule['ruleCoverUrl'];
@@ -512,11 +511,11 @@ class BookSite {
     if (nameResult.length > 0) {
       name = nameResult[0];
     }
-    List authorResult = parseWholeRole(doc, ruleBookAuthor);
-    var author;
-    if (authorResult.length > 0) {
-      author = authorResult[0];
-    }
+//    List authorResult = parseWholeRole(doc, ruleBookAuthor);
+//    var author;
+//    if (authorResult.length > 0) {
+//      author = authorResult[0];
+//    }
     List chapterListDocs = parseWholeRole(doc, ruleChapterList);
     print('章节节点数量: ${chapterListDocs.length}');
     List chapterList = [];
@@ -569,7 +568,7 @@ class BookSite {
 //    var bookSource =
 //        BookSource.where((it) => jsonEncode(it).indexOf('|char=gbk') == -1)
 //            .toList();
-    var bookSource = BookSource;
+//    var bookSource = BookSource;
 //    var bookSourceStr = await rootBundle.loadString('assets/file/booksource.json');
 //    var bookSource = json.decode(bookSourceStr);
     // 10 11 13 29 33 51解析出现问题
@@ -611,7 +610,7 @@ class BookSite {
     searchUrl = searchUrl.replaceAll('@', '?');
     http.Response response = await request(searchUrl, 5);
 //    var data = response.data;
-
+    print('返回的response ${response}');
     var data = '';
     data = requestBody2Utf8(response, isGbk);
 //    print(data);
@@ -667,7 +666,7 @@ class BookSite {
   Future<String> parseChapter(String chapterUrl, siteRule) async {
     var bookSource = BookSource;
     Map siteRule = bookSource[0];
-    var ruleBookContent = siteRule['ruleBookContent'];
+//    var ruleBookContent = siteRule['ruleBookContent'];
     print(chapterUrl);
     http.Response response = await request(chapterUrl);
 

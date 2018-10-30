@@ -208,7 +208,7 @@ class _BookSearchPageState extends State<BookSearchPage> {
     );
   }
 
-  var localBook=[];
+  var localBook = [];
 
   void searchBook() async {
     List<Map> list = await Globals.database.rawQuery(
@@ -266,16 +266,20 @@ class _BookSearchPageState extends State<BookSearchPage> {
           //增加书源结果
 //          print('列表存在，增加书源结果');
           exist['source'].add(book);
-          if (book['chapterList'] != null &&
-              book['chapterList'].length > exist['chapterList'].length) {
-            exist['chapterList'] = book['chapterList'];
-            exist['chapters'] = book['chapters'];
-            exist['url'] = book['url'];
-          }
-          if (exist['imgUrl'] == null && book['imgUrl'] != null) {
+//          if (book['chapterList'] != null &&
+//              book['chapterList'].length > exist['chapterList'].length) {
+//            exist['chapterList'] = book['chapterList'];
+//            exist['chapters'] = book['chapters'];
+//            exist['url'] = book['url'];
+//            exist['siteName'] = book['siteName'];
+//            exist['siteHost'] = book['siteHost'];
+//          }
+          if ((exist['imgUrl'] == null || exist['imgUrl'] == '') &&
+              book['imgUrl'] != null) {
             exist['imgUrl'] = book['imgUrl'];
           }
-          if (exist['kind'] == null && book['kind'] != null) {
+          if ((exist['kind'] == null || exist['kind'] == '') &&
+              book['kind'] != null) {
             exist['kind'] = book['kind'];
           }
           resultHasBook = true;

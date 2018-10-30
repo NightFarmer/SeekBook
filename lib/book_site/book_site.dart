@@ -179,6 +179,7 @@ class BookSite {
       'siteRule': json.encode(siteRule),
     });
     bookInfo['url'] = url;
+    bookInfo['name'] = name;
     bookInfo['author'] = author;
     bookInfo['siteName'] = bookSourceName;
     bookInfo['siteHost'] = bookSourceUrl;
@@ -370,10 +371,10 @@ class BookSite {
               String content = nodesHtml;
               content = content
 //                  .replaceAll('<script>chaptererror();</script>', '')
-                  .replaceAll('<p>', '')
-                  .replaceAll('</p>', '')
-                  .replaceAll('<P>', '')
-                  .replaceAll('</P>', '')
+//                  .replaceAll('<p>', '')
+//                  .replaceAll('</p>', '')
+//                  .replaceAll('<P>', '')
+//                  .replaceAll('</P>', '')
                   .split("<br>")
                   .map((it) => "　　" + it.trim().replaceAll('&nbsp;', ''))
                   .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
@@ -562,18 +563,18 @@ class BookSite {
     }
 
     String ruleChapterList = siteRule['ruleChapterList'];
-    String ruleBookName = siteRule['ruleBookName'];
+//    String ruleBookName = siteRule['ruleBookName'];
 //    String ruleBookAuthor = siteRule['ruleBookAuthor'];
     String ruleChapterName = siteRule['ruleChapterName'];
     String ruleContentUrl = siteRule['ruleContentUrl'];
     String ruleCoverUrl = siteRule['ruleCoverUrl'];
 //    String ruleChapterList = siteRule['ruleChapterList'];
 //    var doc = parse(data);
-    List nameResult = parseWholeRole(doc, ruleBookName);
-    var name;
-    if (nameResult.length > 0) {
-      name = nameResult[0];
-    }
+//    List nameResult = parseWholeRole(doc, ruleBookName);
+//    var name;
+//    if (nameResult.length > 0) {
+//      name = nameResult[0];
+//    }
 //    List authorResult = parseWholeRole(doc, ruleBookAuthor);
 //    var author;
 //    if (authorResult.length > 0) {
@@ -612,8 +613,8 @@ class BookSite {
     }
 
     Map<String, dynamic> bookInfo = {
-      "name": name,
-      "author": "不重要,使用列表书名",
+//      "name": name,
+//      "author": "不重要,使用列表书名",
       "imgUrl": imgUrl,
 //      "url": url,
 //      "site": bookSourceUrl,
@@ -638,11 +639,11 @@ class BookSite {
     var isGbk = searchUrl.indexOf('|char=gbk') != -1;
     String data = requestBody2Utf8(response, isGbk);
 
-    data = data.replaceAll(new RegExp('<script.*</script>'), '');
     var doc = parse(data);
     var ruleBookContent = siteRule['ruleBookContent'];
-    var bookContentResult = parseWholeRole(doc, ruleBookContent)[0];
-    return bookContentResult;
+    var result = parseWholeRole(doc, ruleBookContent)[0];
+    result = result.replaceAll(new RegExp('<script.*</script>'), '');
+    return result;
   }
 
   searchBook(String text, siteRule) async {
@@ -721,4 +722,3 @@ class BookSite {
     return bookContentResult;
   }
 }
-

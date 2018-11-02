@@ -225,7 +225,7 @@ class _BookDetailState extends State<BookDetailPage> {
     print("详情页，，， ${this.bookInfo["siteHost"]}");
     setState(() {
       if (bookInfo != null) {
-        this.imgUrl = bookInfo['imgUrl'] ?? this.imgUrl;
+        this.imgUrl = this.imgUrl ?? bookInfo['imgUrl'];
         this.updateTime = bookInfo['updateTime'];
 //        this.chapterList = json.decode(bookInfo['chapters']);
         this.chapterList = bookInfo['chapterList'];

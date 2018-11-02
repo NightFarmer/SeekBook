@@ -344,9 +344,14 @@ class MyBookListState extends State<MyBookList> {
   }
 
   void deleteBook(Map item) async {
-    await Globals.database.update(
+//    await Globals.database.update(
+//      'Book',
+//      {'active': false},
+//      where: 'name=? and author=?',
+//      whereArgs: [item['name'], item['author']],
+//    );
+    await Globals.database.delete(
       'Book',
-      {'active': false},
       where: 'name=? and author=?',
       whereArgs: [item['name'], item['author']],
     );

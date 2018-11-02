@@ -181,7 +181,7 @@ class BookSite {
     bookInfo['url'] = url;
     bookInfo['name'] = name;
     bookInfo['author'] = author;
-    bookInfo['imgUrl'] = bookInfo['imgUrl'] ?? imgUrl;
+    bookInfo['imgUrl'] = imgUrl ?? bookInfo['imgUrl'];
     bookInfo['siteName'] = bookSourceName;
     bookInfo['siteHost'] = bookSourceUrl;
 
@@ -371,7 +371,10 @@ class BookSite {
               String nodesHtml = tempItem.innerHtml;
               String content = nodesHtml;
               content = content
-                  .replaceAll(new RegExp('<script.*</script>|<p>|</p>|<p/>|<P>|</P>|<P/>'), '')
+                  .replaceAll(
+                      new RegExp(
+                          '<script.*</script>|<p>|</p>|<p/>|<P>|</P>|<P/>'),
+                      '')
 //                  .replaceAll('<p>', '')
 //                  .replaceAll('</p>', '')
 //                  .replaceAll('<P>', '')

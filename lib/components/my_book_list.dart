@@ -67,7 +67,7 @@ class MyBookListState extends State<MyBookList> {
       book['name'],
       book['author'],
       book['url'],
-      null,
+      BookSite.findSiteRule(book['siteHost']),
     );
     if (bookNew == null) {
       setState(() {

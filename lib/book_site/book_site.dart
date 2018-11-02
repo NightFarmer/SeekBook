@@ -152,7 +152,7 @@ class BookSite {
     }
   }
 
-  bookDetail(name, author, url, siteRule, [onFindExist]) async {
+  bookDetail(name, author, url, siteRule, [onFindExist, imgUrl]) async {
 //    var bookSource = BookSource;
 //    Map siteRule = bookSource[0];
 
@@ -181,6 +181,7 @@ class BookSite {
     bookInfo['url'] = url;
     bookInfo['name'] = name;
     bookInfo['author'] = author;
+    bookInfo['imgUrl'] = bookInfo['imgUrl'] ?? imgUrl;
     bookInfo['siteName'] = bookSourceName;
     bookInfo['siteHost'] = bookSourceUrl;
 
@@ -370,7 +371,7 @@ class BookSite {
               String nodesHtml = tempItem.innerHtml;
               String content = nodesHtml;
               content = content
-//                  .replaceAll('<script>chaptererror();</script>', '')
+                  .replaceAll(new RegExp('<script.*</script>|<p>|</p>|<p/>|<P>|</P>|<P/>'), '')
 //                  .replaceAll('<p>', '')
 //                  .replaceAll('</p>', '')
 //                  .replaceAll('<P>', '')
@@ -380,6 +381,7 @@ class BookSite {
                   .where((it) => it.length != 2) //剔除掉只有两个全角空格的行
                   .join('\n');
               newTmpList.add(content);
+              print(content);
               break;
           }
         }
@@ -642,7 +644,6 @@ class BookSite {
     var doc = parse(data);
     var ruleBookContent = siteRule['ruleBookContent'];
     var result = parseWholeRole(doc, ruleBookContent)[0];
-    result = result.replaceAll(new RegExp('<script.*</script>'), '');
     return result;
   }
 

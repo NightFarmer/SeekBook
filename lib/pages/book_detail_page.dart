@@ -218,14 +218,14 @@ class _BookDetailState extends State<BookDetailPage> {
           bookActive = 0;
         });
       }
-    });
+    }, imgUrl);
     if (local) return;
 
     if (!mounted) return;
     print("详情页，，， ${this.bookInfo["siteHost"]}");
     setState(() {
       if (bookInfo != null) {
-        this.imgUrl = bookInfo['imgUrl'];
+        this.imgUrl = bookInfo['imgUrl'] ?? this.imgUrl;
         this.updateTime = bookInfo['updateTime'];
 //        this.chapterList = json.decode(bookInfo['chapters']);
         this.chapterList = bookInfo['chapterList'];

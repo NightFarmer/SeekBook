@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:seek_book/book_site/book_site.dart';
@@ -41,37 +43,108 @@ class _BookDetailState extends State<BookDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    var imgWidth = dp(80);
     var body = Column(
       children: <Widget>[
-        Container(
-          child: Text('${bookInfo['name']}'),
-        ),
-        Container(
-          child: Text('${bookInfo['author']}'),
-        ),
-        GestureDetector(
-          onTap: () {
-            toggleToSave();
-          },
-          child: Text("${bookActive == 1 ? '取消' : '追书'}"),
-        ),
-        GestureDetector(
-          onTap: () {},
-          child: Text('阅读'),
-        ),
-        BookImg(
-          imgUrl: imgUrl,
-          width: imgWidth,
-        ),
-        Text('追书状态：$bookActive'),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              orderBy = (orderBy + 1) % 2;
-            });
-          },
-          child: Text("倒序"),
+        Stack(
+          children: [
+            Image.network(
+              imgUrl,
+              width: vw(100),
+              height: dp(180),
+              fit: BoxFit.cover,
+            ),
+            BackdropFilter(
+              filter: new ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+              child: new Container(
+                color: Colors.black.withOpacity(0.5),
+                width: vw(100),
+                height: dp(180),
+                child: Padding(
+                  padding: EdgeInsets.all(dp(20)),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      BookImg(
+                        imgUrl: imgUrl,
+                        width: dp(110),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: dp(20)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.only(bottom: dp(10)),
+                                child: Text(
+                                  '${bookInfo['name']}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: dp(24),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.only(bottom: dp(5)),
+                                child: Text(
+                                  '作者：${bookInfo['author']}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: dp(15),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.only(bottom: dp(5)),
+                                child: Text(
+//                                  '第一千二百七十八章 历史性的一幕',
+                                  chapterList.length > 0
+                                      ? '${chapterList[chapterList.length - 1]["title"]}'
+                                      : '',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: dp(15),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: dp(5)),
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: dp(3)),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.white,
+                                  ),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(dp(6))),
+                                ),
+                                child: Text(
+                                  '玄幻小说',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: dp(15),
+                                  ),
+                                ),
+                              ),
+//                              GestureDetector(
+//                                onTap: () {
+//                                  setState(() {
+//                                    orderBy = (orderBy + 1) % 2;
+//                                  });
+//                                },
+//                                child: Text("倒序"),
+//                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
         Expanded(
           child: ListView.builder(
@@ -174,7 +247,8 @@ class _BookDetailState extends State<BookDetailPage> {
     );
     return Scaffold(
       appBar: TopBar(
-        title: bookInfo['name'],
+//        title: bookInfo['name'],
+        title: "书籍详情",
       ),
       backgroundColor: Colors.white,
       body: Builder(builder: (BuildContext _scaffoldContext) {
@@ -191,7 +265,16 @@ class _BookDetailState extends State<BookDetailPage> {
       onTap: () {
         startReadFromChapter(index);
       },
-      child: Text("${item['title']}"),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: dp(10), vertical: dp(6)),
+        child: Text(
+          "${item['title']}",
+          style: TextStyle(
+            color: Color(0xFF333333),
+            fontSize: dp(17),
+          ),
+        ),
+      ),
     );
   }
 

@@ -189,7 +189,7 @@ class BookSite {
       bookInfo["currentPageIndex"] = exist[0]["currentPageIndex"];
       bookInfo["currentChapterIndex"] = exist[0]["currentChapterIndex"];
       print("更新");
-      bookInfo["hasNew"] = exist[0];
+//      bookInfo["hasNew"] = exist[0];
       if (bookInfo['hasNew'] != 1 &&
           bookInfo["chapters"] != exist[0]["chapters"]) {
         bookInfo['hasNew'] = 1;

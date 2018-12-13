@@ -6,13 +6,13 @@
 
 ![阅读](https://github.com/NightFarmer/SeekBook/blob/master/screenshot/seekbook1.gif?raw=true)
 
-![搜索](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook2.png)
+![搜索](https://github.com/NightFarmer/SeekBook/blob/master/screenshot/seekbook2.png?raw=true)
 
-![搜索](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook3.png)
+![搜索](https://github.com/NightFarmer/SeekBook/blob/master/screenshot/seekbook3.png?raw=true)
 
-![详情](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook4.png)
+![详情](https://github.com/NightFarmer/SeekBook/blob/master/screenshot/seekbook4.png?raw=true)
 
-![首页](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook5.png)
+![首页](https://github.com/NightFarmer/SeekBook/blob/master/screenshot/seekbook5.png?raw=true)
 
 # 状态
 

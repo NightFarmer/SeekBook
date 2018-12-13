@@ -4,7 +4,7 @@
 
 # 截图
 
-![阅读](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook1.gif)
+![阅读](https://github.com/NightFarmer/SeekBook/blob/master/screenshot/seekbook1.gif?raw=true)
 
 ![搜索](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook2.png)
 

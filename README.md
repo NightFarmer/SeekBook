@@ -14,3 +14,6 @@
 
 ![首页](https://gitee.com/NightFarmer/seek_book/raw/master/screenshot/seekbook5.png)
 
+# 状态
+
+基本功能完成，完善中。
